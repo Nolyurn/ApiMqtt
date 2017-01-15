@@ -1,10 +1,10 @@
-var http     = require('http')
+let http     = require('http')
   , httpServ = http.createServer()
   , mosca    = require('mosca');
 
 
 //Settings applied to mqttServ
-var settings = {
+let settings = {
   port: 1883	//It should be 1883
 };
  
