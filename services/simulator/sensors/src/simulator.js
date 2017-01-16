@@ -29,18 +29,15 @@ export class SensorsSimulator {
     start_sensor(payload) {
         for (let key of ['name', 'type', 'freq'])
             if (!payload.hasOwnProperty(key))
-                // TODO: error handling: invalid payload.
-                return;
+        		throw "Missing payload property '"+key+"' in "+JSON.stringify(payload);
 
         for (let sensor of this.sensors)
             if (sensor.name == payload.name)
-                // TODO: error handling: sensor already exists.
-                return;
+                throw "Sensor '"+sensor.name+"' already exists";
 
         let frequency = parseFloat(payload.freq);
-        if(isNan(frequency) || frequency <= 0)
-            // TODO: error handling: invalid frequency (+mplement limits).
-            return;
+        if(isNaN(frequency) || frequency <= 0)
+            throw "Freq is not a positive number in "+JSON.stringify(payload);
 
         payload.timer = setInterval(this.simulate.bind(this), Math.round(frequency * 1000), payload);
         this.sensors.push(payload);
@@ -52,15 +49,16 @@ export class SensorsSimulator {
      */
     stop_sensor(payload) {
         if (!payload.hasOwnProperty('name'))
-            // TODO: error handling: invalid payload.
-            return;
+        	throw "Missing payload property 'name' in "+JSON.stringify(payload);
 
         for (let i = this.sensors.length - 1; i >= 0; i--) {
             if (payload.name == this.sensors[i].name) {
                 this.sensors.slice(i, 1);
                 clearInterval(payload.timer);
+                return;
             }
         }
+        throw "No sensor started with name '"+payload.name+"'";
     }
 
     /**
