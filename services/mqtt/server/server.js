@@ -5,6 +5,7 @@ let http     = require('http')
 
 //Settings applied to mqttServ
 let settings = {
+  host: 'localhost',	
   port: 1883	//It should be 1883
 };
  
@@ -24,10 +25,8 @@ function setup() {
 }
 
 //This function is used to authenticate user
-//Maybe use authorizer ?
-mqttServ.connect = function(client, username, password, callback) {
+mqttServ.authenticate = function(client, username, password, callback) {
 	let authorized = (username === 'test' && password.toString() === 'test');
 	if (authorized) client.user = username;
 	callback(null, authorized);
 }
-
