@@ -7,6 +7,8 @@ services:
     build: mqtt
     expose:
       - "9000"
+    depends_on:
+      - redis
 
   # The simulation service. The simulator/ directory hosts the simulator (MQTT
   # client). The following parameters can be used to configure the service.
@@ -14,6 +16,7 @@ services:
     build: simulator
     depends_on:
       - mqtt
+      #- redis
     environment:
       - BROKER_HOST=mqtt
       #- BROKER_PORT=9000
@@ -21,3 +24,9 @@ services:
       - AUTH_PASS=secret
       #- TOPICS_START=sensors/start
       #- TOPICS_STOP=sensors/stop
+
+  # The Redis database used by the server (and possibly the simulator).
+  redis:
+    build: redis
+    expose:
+      - "6379"
