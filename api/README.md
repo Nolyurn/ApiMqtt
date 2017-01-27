@@ -8,7 +8,6 @@
 import Admin from 'proto-mqtt';
 
 let client = Admin("ws://127.0.0.1:8080", {user:"robert", password:"password123"});
-client.connect()
 
 client.createUser("billy", "bob");
 client.deleteUser(billy);
@@ -29,8 +28,6 @@ client.onDelete = function(payload) {
     // Code à exécuter quand vous recevez une instruction de suppression de capteur
 }
 
-client.connect()
-
 client.publish("topic", {value:12, type:"POSITIVE_NUMBER"});
 ```
 
@@ -40,7 +37,6 @@ client.publish("topic", {value:12, type:"POSITIVE_NUMBER"});
 import Moderateur from 'proto-mqtt';
 
 let client = Moderateur("ws://127.0.0.1:8080", {user:"robert", password:"password123"});
-client.connect();
 
 client.createSensor(payload);
 client.deleteSensor(name);
@@ -58,21 +54,21 @@ client.onMessage = (topic, payload) => {
 }
 
 client.onConnect = (connack) => {
-
+    // Le code quand vous vous connectez
 }
 
 client.onReconnect = () => {
-
+    // Le code quand une reconnexion a lieu
 }
 
 client.onOffline = () => {
-
+    // Le code quand le client est hors ligne. 
 }
 
 client.onError = (error) => {
-
+    // Renvoyée quand une erreur a lieu
 }
 
-client.connect();
+client.subscribe("topic");
 
 ```
