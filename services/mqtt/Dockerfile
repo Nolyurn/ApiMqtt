@@ -9,4 +9,4 @@ USER node
 WORKDIR /home/node/server
 RUN npm install --silent && npm run build
 
-CMD ['npm', 'start']
+CMD [ "npm", "start" ]
