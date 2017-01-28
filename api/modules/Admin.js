@@ -55,7 +55,7 @@ class Admin {
         this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
         this._client.subscribe("admin/event");
 
-        this._ops = [];
+        this._ops = {};
 
         this._client.on("message", onMessage.bind(this));
         this._client.on("error", onError.bind(this));
