@@ -1,42 +1,76 @@
-let mqtt = require("mqtt");
+const mqtt = require("mqtt");
 
-let defaultParams = {
+const defaultParams = {
     username: "anonymous",
-    password: "anonymous",
-    async: false,
+    password: "anonymous"
 };
 
-function onMessage() {
-
+function onMessage(topic, payload) {
+    if(typeof this._onMessage === "function") {
+        this._onMessage(topic, payload);
+    }
 }
 
-function onError() {
-
+function onError(error) {
+    if(typeof this._onMessage === "function") {
+        this._onError(error);
+    }
 }
 
-function onDisconnect() {
+function onConnect(connack) {
+    if(typeof this._onConnect === "function") {
+        this._onConnect(connack);
+    }
+}
 
+function onReconnect() {
+    if(typeof this._onReconnect === "function") {
+        this._onReconnect();
+    }
+}
+
+function onOffline() {
+    if(typeof this._onOffline === "function") {
+        this._onOffline();
+    }
 }
 
 class Client {
-    constructor() {
-        this.client = null;
+    constructor(url, args) {
+        this._args = Object.assign({}, defaultParams, args);
 
-        this.client.on("message", onMessage.bind(this));
+        this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
 
-        this.onConnect = null;
-        this.onReconnect = null;
-        this.onDisconnect = null;
-        this.onOffline = null;
-        this.onError = null;
-        this.onMessage = null;
-
-
+        this._client.on("message", onMessage.bind(this));
+        this._client.on("error", onError.bind(this));
+        this._client.on("connect", onConnect.bind(this));
+        this._client.on("reconnect", onReconnect.bind(this));
+        this._client.on("offline", onOffline.bind(this));
 
     }
 
-    connect(url, argument) {
+    subscribe(topic){
+        this._client.subscribe("value/" + topic);
+    }
 
+    on(event, func) {
+        switch(event) {
+            case "message" :
+                this._onMessage = func;
+                break;
+            case "error" :
+                this._onError = func;
+                break;
+            case "connect" :
+                this._onConnect = func;
+                break;
+            case "reconnect" :
+                this._onReconnect = func;
+                break;
+            case "offline" :
+                this._onOffline = func;
+                break;
+        }
     }
 }
 
