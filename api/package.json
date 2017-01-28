@@ -1,0 +1,35 @@
+{
+  "name": "proto-mqtt",
+  "version": "0.1.0",
+  "description": "A client-sided library to simulate sensors linked to a proto-mqtt broker.",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nolyurn/ApiMqtt.git"
+  },
+  "keywords": [
+    "mqtt"
+  ],
+  "contributors": [
+    "Yohann Bacha <y.bacha@live.fr>",
+    "Alexandre Bailleul",
+    "Julien Kritter",
+    "Gatien Tenière"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Nolyurn/ApiMqtt/issues"
+  },
+  "homepage": "https://github.com/Nolyurn/ApiMqtt#readme",
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-es2015": "^6.22.0",
+    "eslint": "^3.14.1"
+  },
+  "dependencies": {
+    "mqtt": "^2.3.0"
+  }
+}
