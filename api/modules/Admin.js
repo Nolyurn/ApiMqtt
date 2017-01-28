@@ -12,6 +12,11 @@ export const Privilege = {
     CLIENT: 4
 };
 
+const defaultCallback = {
+    onSuccess: () => {},
+    onError: () => {}
+};
+
 function onMessage(topic, payload) {
     if(topic === "admin/event") {
         let message = JSON.parse(payload);
@@ -65,11 +70,11 @@ class Admin {
 
     }
 
-    createUser(username, password, privilege, callback = {onSuccess: () => {}, onError: () => {}}) {
+    createUser(username, password, privilege, callback = {}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+        callback = Object.assign({}, defaultCallback, callback);
         this._ops[token] = callback;
 
-        //noinspection JSUnresolvedFunction
         this._client.publish("admin/createUser", {
             token: token,
             username: username,
@@ -79,11 +84,11 @@ class Admin {
 
     }
 
-    deleteUser(username, callback = {onSuccess: () => {}, onError: () => {}}) {
+    deleteUser(username, callback = {}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+        callback = Object.assign({}, defaultCallback, callback);
         this._ops[token] = callback;
 
-        //noinspection JSUnresolvedFunction
         this._client.publish("admin/deleteUser", {
             token: token,
             username: username,

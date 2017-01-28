@@ -7,7 +7,7 @@ const defaultParams = {
 
 function onMessage(topic, payload) {
     if(typeof this._onMessage === "function") {
-        this._onMessage(topic, payload);
+        this._onMessage(topic, JSON.parse(payload));
     }
 }
 

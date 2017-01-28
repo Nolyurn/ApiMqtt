@@ -13,7 +13,7 @@ const defaultPayload = {
 const defaultCallback = {
     onSuccess: () => {},
     onError: () => {}
-}
+};
 
 export const Types = {
     POSITIVE_NUMBER: "POSITIVE_NUMBER",
