@@ -2,9 +2,7 @@ const mqtt = require("mqtt");
 
 const defaultParams = {
     username: "anonymous",
-    password: "anonymous",
-    async: false,
-    timeout: 5000
+    password: "anonymous"
 };
 
 export const Privilege = {
@@ -17,7 +15,12 @@ export const Privilege = {
 function onMessage(topic, payload) {
     if(topic === "admin/event") {
         let message = JSON.parse(payload);
-        this._ops[message.token] = message["success"];
+        if(message.token in this._ops) {
+            if(typeof this._ops[message.token].onSuccess === "function" && message["success"])
+                this._ops[message.token].onSuccess(message);
+            else if(typeof this._ops[message.token].onError === "function" && !message["success"])
+                this._ops[message.token].onError(message);
+        }
     }
 }
 
@@ -62,8 +65,9 @@ class Admin {
 
     }
 
-    createUser(username, password, privilege) {
+    createUser(username, password, privilege, callback = {onSuccess: () => {}, onError: () => {}}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+        this._ops[token] = callback;
 
         //noinspection JSUnresolvedFunction
         this._client.publish("admin/createUser", {
@@ -73,20 +77,11 @@ class Admin {
             privilege: privilege
         });
 
-        if(!this._args.async) {
-            let compteur = 0;
-            while(compteur < this._args.timeout) {
-                if(token in this._ops) {
-                    let returned = this._ops[token];
-                    delete this._ops[token];
-                    return returned;
-                }
-            }
-        }
     }
 
-    deleteUser(username) {
+    deleteUser(username, callback = {onSuccess: () => {}, onError: () => {}}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
+        this._ops[token] = callback;
 
         //noinspection JSUnresolvedFunction
         this._client.publish("admin/deleteUser", {
@@ -94,16 +89,7 @@ class Admin {
             username: username,
         });
 
-        if(!this._args.async) {
-            let compteur = 0;
-            while(compteur < this._args.timeout) {
-                if(token in this._ops) {
-                    let returned = this._ops[token];
-                    delete this._ops[token];
-                    return returned;
-                }
-            }
-        }
+
     }
 
     on(event, func) {

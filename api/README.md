@@ -6,11 +6,18 @@
 
 ```js
 import Admin from 'proto-mqtt';
-
-let client = Admin("ws://127.0.0.1:8080", {user:"robert", password:"password123"});
+let callback = {
+    onSuccess: (message) => {
+        console.log("Création de l'utilisateur " + message.username + " réussie !")
+    },
+    onError: (message) => {
+        console.log("Erreur lors de la création de l'utilisateur " + message.username + ". Erreur : " + message.error)
+    }
+}
+let client = Admin("ws://127.0.0.1:8080", {user:"robert", password:"password123"}, callback);
 
 client.createUser("billy", "bob");
-client.deleteUser(billy);
+client.deleteUser("billy");
 ```
 
 #### Simulateur
