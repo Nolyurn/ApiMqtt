@@ -30,7 +30,7 @@ function onMessage(topic, payload) {
 }
 
 function onError(error) {
-    if(typeof this._onMessage === "function") {
+    if(typeof this._onError === "function") {
         this._onError(error);
     }
 }
