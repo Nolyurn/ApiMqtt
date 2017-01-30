@@ -27,13 +27,13 @@ import Simulateur from 'proto-mqtt';
 
 let client = Simulateur("ws://127.0.0.1:8080", {user:"robert", password:"password123"});
 
-client.onCreate = function(payload) {
+client.on("create", (payload) => {
     // Code à exécuter quand vous recevez une instruction de création de capteur  
-}
+});
 
-client.onDelete = function(payload) {
+client.on("delete", (payload) => {
     // Code à exécuter quand vous recevez une instruction de suppression de capteur
-}
+});
 
 client.publish("topic", {value:12, type:"POSITIVE_NUMBER"});
 ```
@@ -56,25 +56,25 @@ import Client from 'proto-mqtt';
 
 let client = Client("ws://127.0.0.1:8080", {user:"robert", password:"password123"});
 
-client.onMessage = (topic, payload) => {
+client.on("message", (topic, payload) => {
     // Le code quand vous recevrez un message
-}
+});
 
-client.onConnect = (connack) => {
+client.on("connect", (connack) => {
     // Le code quand vous vous connectez
-}
+});
 
-client.onReconnect = () => {
+client.on("reconnect", () => {
     // Le code quand une reconnexion a lieu
-}
+});
 
-client.onOffline = () => {
+client.on("offline", () => {
     // Le code quand le client est hors ligne. 
-}
+});
 
-client.onError = (error) => {
+client.on("error", (error) => {
     // Renvoyée quand une erreur a lieu
-}
+});
 
 client.subscribe("topic");
 
