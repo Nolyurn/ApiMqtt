@@ -9,6 +9,12 @@ function onMessage(topic, payload) {
     if(typeof this._onMessage === "function") {
         this._onMessage(topic, JSON.parse(payload));
     }
+
+    let topicTemp = topic.split("/", 2)[1];
+
+    if(typeof this._subs[topicTemp] === "function") {
+        this._subs[topicTemp](topic, JSON.parse(payload));
+    }
 }
 
 function onError(error) {
@@ -38,6 +44,7 @@ function onOffline() {
 class Client {
     constructor(url, args) {
         this._args = Object.assign({}, defaultParams, args);
+        this._subs = {};
 
         this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
 
@@ -49,8 +56,9 @@ class Client {
 
     }
 
-    subscribe(topic){
+    subscribe(topic, callback = () => {}){
         this._client.subscribe("value/" + topic);
+        this._subs[topic] = callback;
     }
 
     on(event, func) {
