@@ -8,10 +8,12 @@ const defaultParams = {
 function onMessage(topic, payload) {
     let message = JSON.parse(payload);
 
-    if(topic === "sensor/start" && typeof this._onCreate === "function")
+    if(topic === "sensor/start" && typeof this._onCreate === "function") {
         this._onCreate(topic, message);
-    else if(topic === "sensor/stop" && typeof this._onDelete === "function")
+    }
+    else if(topic === "sensor/stop" && typeof this._onDelete === "function") {
         this._onDelete(topic, message);
+    }
 }
 
 function onError(error) {
