@@ -116,3 +116,7 @@ mqttServ.on('published', function(packet, client) {
 });
 
 UM.reset();
+
+module.exports = {
+	server : mqttServ,
+};
