@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "babel-core": "^6.22.1",
+    "crypto": "0.0.3",
     "mosca": "^2.2.0"
   },
   "devDependencies": {
