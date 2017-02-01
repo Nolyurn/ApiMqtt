@@ -7,6 +7,7 @@ let auth_user = process.env.AUTH_USER;
 let auth_pass = process.env.AUTH_PASS;
 let topics_start = process.env.TOPICS_START;
 let topics_stop = process.env.TOPICS_STOP;
+let topics_events = process.env.TOPICS_EVENTS;
 
 /* Ensuring that the required parameters are here. */
 for (let v of [broker_host, auth_user, auth_pass])
@@ -23,4 +24,4 @@ topics_stop = topics_stop === undefined ? 'sensors/stop' : topics_stop;
 /* Setting callbacks: off we go! */
 new SensorsSimulator(
     'mqtt://' + broker_host + ':' + broker_port,
-    auth_user, auth_pass, topics_start, topics_stop);
+    auth_user, auth_pass, topics_start, topics_stop, topics_events);
