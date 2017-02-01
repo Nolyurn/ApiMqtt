@@ -13,6 +13,7 @@ class SensorError extends Error {
      * @param message
      */
     constructor(message) {
+        super(message);
         this.name = 'SensorError';
         this.message = message || 'unknown sensor error';
         this.stack = (new Error()).stack;

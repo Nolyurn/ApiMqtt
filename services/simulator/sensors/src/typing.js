@@ -13,6 +13,7 @@ class TypeError extends Error {
      * @param message
      */
     constructor(message) {
+        super(message);
         this.name = 'TypeError';
         this.message = message || 'unknown type error';
         this.stack = (new Error()).stack;
