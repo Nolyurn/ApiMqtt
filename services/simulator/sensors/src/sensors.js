@@ -56,6 +56,18 @@ class Sensor {
         this.timer = setInterval(callback, Math.round(this.freq * 1000), this);
     }
 
+    /**
+     * Returns the sensor as a JSON payload for announcements.
+     * @returns {{name: *, freq: (Number|*), type: ({name, freq, type}|*)}}
+     */
+    json() {
+        return {
+            'name': this.name,
+            'freq': this.freq,
+            'type': this.type.json()
+        }
+    }
+
     topic() { return 'value/' + this.name; }
     value() { return this.type.value(); }
 }
@@ -97,5 +109,16 @@ export class SensorCollection {
                 return;
             }
         }
+    }
+
+    /**
+     * Creates a JSON payload for the entire collection.
+     * @returns {Array} The JSON payload.
+     */
+    json() {
+        let payload = [];
+        for(let sensor of this.sensors)
+            payload.push(sensor.json());
+        return payload;
     }
 }

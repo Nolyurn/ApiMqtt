@@ -40,6 +40,11 @@ class SensorDataType {
      * @returns {*} A random value for the type.
      */
     value() { throw new TypeError(ErrorMessage.TYPELESS); }
+
+    /**
+     * @returns {{id: string}} The type as a JSON payload.
+     */
+    json() { return {'id': this.id()} }
 }
 
 class RandFloat extends SensorDataType {
@@ -54,15 +59,22 @@ class RandInt extends RandFloat {
         super(params);
 
         for(let key of ['min', 'max'])
-            if(!self.params.hasOwnProperty(key) || isNaN(self.params[key]))
+            if(!this.params.hasOwnProperty(key) || isNaN(this.params[key]))
                 throw new TypeError(format(ErrorMessage.INVALID_PARAM, key));
 
-        self.min = parseInt(params.min, 10);
-        self.max = parseInt(params.max, 10);
+        this.min = parseInt(params.min, 10);
+        this.max = parseInt(params.max, 10);
     }
 
     value() {
-        return Math.floor(super.value() * (self.max - self.min + 1) + self.min);
+        return Math.floor(super.value() * (this.max - this.min + 1) + this.min);
+    }
+
+    json() {
+        let payload = super.json();
+        payload.min = this.min;
+        payload.max = this.max;
+        return payload;
     }
 }
 
@@ -92,6 +104,14 @@ class RoomTemperature extends RandInt {
             min: params.unit == 'C'  ? 17 : 62,
             max: params.unit == 'C' ? 28 : 82
         });
+
+        this.unit = params.unit;
+    }
+
+    json() {
+        let payload = super.json();
+        payload.unit = this.unit;
+        return payload;
     }
 }
 
