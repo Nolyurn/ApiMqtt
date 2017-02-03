@@ -44,7 +44,8 @@ class Sensor {
         if(this.freq < 1) throw new SensorError(ErrorMessage.FREQUENCY_LIMIT);
 
         /* Type identification: this will throw errors when needed. */
-        this.type = find_type(payload.type.id);
+        let sensor_type = find_type(payload.type.id);
+        this.type = new sensor_type(payload.type);
     }
 
     /**
@@ -104,14 +105,7 @@ export class SensorCollection {
     remove(payload) {
         if(!payload.hasOwnProperty('name'))
             throw new SensorError(format(ErrorMessage.INVALID_PAYLOAD, 'name'));
-
-        for(let i = this.sensors.length - 1; i >= 0; i--) {
-            if(payload.name == this.sensors[i].name) {
-                clearInterval(this.sensors[i].timer);
-                this.sensors.slice(i, 1);
-                return;
-            }
-        }
+        this.sensors = this.sensors.filter((i, e) => payload.name === e.name);
     }
 
     /**

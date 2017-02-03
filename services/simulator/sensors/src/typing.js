@@ -3,8 +3,9 @@ import { format } from 'util';
 const ErrorMessage = Object.freeze({
     TYPELESS: 'an abstract type was instantiated',
     INVALID_TYPE: 'invalid or unknown sensor type',
-    INVALID_PARAM: 'missing or invalid type parameter: %d',
-    MISSING_UNIT: 'missing unit'
+    INVALID_PARAM: 'missing or invalid type parameter: %s',
+    MISSING_UNIT: 'missing or invalid unit (expected C or F)',
+    MINMAX_INCOHERENCE: 'incoherence between min and max (min > max)'
 });
 
 class TypeError extends Error {
@@ -58,11 +59,23 @@ class RandInt extends RandFloat {
         super(params);
 
         for(let key of ['min', 'max'])
-            if(!this.params.hasOwnProperty(key) || isNaN(this.params[key]))
+            if(!this.params.hasOwnProperty(key))
                 throw new TypeError(format(ErrorMessage.INVALID_PARAM, key));
 
-        this.min = parseInt(params.min, 10);
-        this.max = parseInt(params.max, 10);
+        let ints = {
+            min: parseFloat(params.min),
+            max: parseFloat(params.max)
+        };
+
+        for(let key of ['min', 'max'])
+            if(isNaN(params[key]) || isNaN(params[key]) || ints[key] % 1 !== 0 || ints[key] % 1 !== 0)
+                throw new TypeError(format(ErrorMessage.INVALID_PARAM, key));
+
+        this.min = Math.trunc(ints.min);
+        this.max = Math.trunc(ints.max);
+
+        if(this.min > this.max)
+            throw new TypeError(ErrorMessage.MINMAX_INCOHERENCE);
     }
 
     value() {
@@ -96,12 +109,12 @@ class RoomTemperature extends RandInt {
     static id() { return 'ROOM_TEMPERATURE'; }
 
     constructor(params) {
-        if(!params.hasOwnProperty('unit'))
-            throw TypeError(ErrorMessage.MISSING_UNIT);
+        if(!params.hasOwnProperty('unit') || params.unit !== 'C' && params.unit !== 'F')
+            throw new TypeError(ErrorMessage.MISSING_UNIT);
 
         super({
-            min: params.unit == 'C'  ? 17 : 62,
-            max: params.unit == 'C' ? 28 : 82
+            min: params.unit === 'C'  ? 17 : 62,
+            max: params.unit === 'C' ? 28 : 82
         });
 
         this.unit = params.unit;
