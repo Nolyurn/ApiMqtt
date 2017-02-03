@@ -49,14 +49,14 @@ describe('Sensors test', () => {
             expect(sensors.sensors.length).toBe(0);
         });
         it("Type property is invalid", () => {
-            var payload = {name:"sensname", type:{id:"OUPS"}, freq:0};
+            var payload = {name:"sensname", type:{id:"OUPS"}, freq:1};
             expectAddSensorError(payload, "invalid or unknown sensor type");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Sensor name already used", () => {
             var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE", unit:"C"}, freq:1};
             expect(sensors.sensors.length).toBe(0);
-            sensors.add(payload);
+            sensors.add(payload, function(){});
             expect(sensors.sensors.length).toBe(1);
             expectAddSensorError(payload, "sensor name is already in use");
             expect(sensors.sensors.length).toBe(1);
@@ -64,7 +64,7 @@ describe('Sensors test', () => {
         it("Accepted payload", () => {
             var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE", unit:"C"}, freq:1};
             expect(sensors.sensors.length).toBe(0);
-            sensors.add(payload);
+            sensors.add(payload, function(){});
             expect(sensors.sensors.length).toBe(1);
         });
     });
@@ -76,7 +76,7 @@ describe('Sensors test', () => {
         it("Accepted sensor stop", () => {
             var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE", unit:"C"}, freq:1};
             expect(sensors.sensors.length).toBe(0);
-            sensors.add(payload);
+            sensors.add(payload, function(){});
             expect(sensors.sensors.length).toBe(1);
             sensors.remove(payload);
             expect(sensors.sensors.length).toBe(0);
@@ -84,47 +84,47 @@ describe('Sensors test', () => {
     });
     describe('sensor type errors', () => {
         it("Missing unit in type ROOM_TEMPERATURE ", () => {
-            var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE"}, freq:0};
+            var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE"}, freq:1};
             expectAddSensorError(payload, "missing unit");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Bad unit format in type ROOM_TEMPERATURE ", () => {
-            var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE",unit:5}, freq:0};
+            var payload = {name:"sensname", type:{id:"ROOM_TEMPERATURE",unit:5}, freq:1};
             expectAddSensorError(payload, "missing unit");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Missing min in type RAND_INT", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT"}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT"}, freq:1};
             expectAddSensorError(payload, "missing or invalid type parameter: min");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Bad min format in type RAND_INT, string used", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT",min:"5"}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT",min:"5"}, freq:1};
             expectAddSensorError(payload, "missing or invalid type parameter: min");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Bad min format in type RAND_INT, float used", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT",min:5.23}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT",min:5.23}, freq:1};
             expectAddSensorError(payload, "missing or invalid type parameter: min");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Missing max in type RAND_INT", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT", min:5}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT", min:5}, freq:1};
             expectAddSensorError(payload, "missing or invalid type parameter: max");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Bad max format in type RAND_INT, string used", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT",min:5,max:"10"}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT",min:5,max:"10"}, freq:1};
             expectAddSensorError(payload, "missing or invalid type parameter: max");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Bad max format in type RAND_INT, float used", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT",min:5,max:10.24}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT",min:5,max:10.24}, freq:1};
             expectAddSensorError(payload, "missing or invalid type parameter: max");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Min higher than max in type RAND_INT", () => {
-            var payload = {name:"sensname", type:{id:"RAND_INT",min:10,max:4}, freq:0};
+            var payload = {name:"sensname", type:{id:"RAND_INT",min:10,max:4}, freq:1};
             expectAddSensorError(payload, "error to be defined ");
             expect(sensors.sensors.length).toBe(0);
         });
