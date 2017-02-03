@@ -50,7 +50,7 @@ describe('Sensors test', () => {
         });
         it("Type property is invalid", () => {
             var payload = {name:"sensname", type:{id:"OUPS"}, freq:0};
-            expectAddSensorError(payload, "invalid sensor type: OUPS");
+            expectAddSensorError(payload, "invalid or unknown sensor type");
             expect(sensors.sensors.length).toBe(0);
         });
         it("Sensor name already used", () => {
@@ -58,7 +58,7 @@ describe('Sensors test', () => {
             expect(sensors.sensors.length).toBe(0);
             sensors.add(payload);
             expect(sensors.sensors.length).toBe(1);
-            expectAddSensorError(payload, "sensor name sensname is already is use");
+            expectAddSensorError(payload, "sensor name is already in use");
             expect(sensors.sensors.length).toBe(1);
         });
         it("Accepted payload", () => {

@@ -1,8 +1,8 @@
-import format from 'util';
+import { format } from 'util';
 
 const ErrorMessage = Object.freeze({
     TYPELESS: 'an abstract type was instantiated',
-    INVALID_TYPE: 'invalid sensor type: %s',
+    INVALID_TYPE: 'invalid or unknown sensor type',
     INVALID_PARAM: 'missing or invalid type parameter: %d',
     MISSING_UNIT: 'missing unit'
 });
@@ -16,7 +16,6 @@ class TypeError extends Error {
         super(message);
         this.name = 'TypeError';
         this.message = message || 'unknown type error';
-        this.stack = (new Error()).stack;
     }
 }
 
