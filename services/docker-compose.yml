@@ -24,6 +24,9 @@ services:
       - AUTH_PASS=secret
       #- TOPICS_START=sensors/start
       #- TOPICS_STOP=sensors/stop
+      #- TOPICS_EVENT=sensors/event
+      #- TOPICS_ANNOUNCE=sensors
+      #- ANNOUNCE_FREQ=5
 
   # The Redis database used by the server (and possibly the simulator).
   redis:
