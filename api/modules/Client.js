@@ -61,6 +61,11 @@ class Client {
         this._subs[topic] = callback;
     }
 
+    unsubscribe(topic) {
+        this._client.unsubscribe(topic);
+        delete this._subs[topic];
+    }
+
     on(event, func) {
         switch(event) {
             case "message" :

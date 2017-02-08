@@ -6,10 +6,10 @@ const defaultParams = {
 };
 
 export const Privilege = {
-    ADMIN: 1,
-    SIMULATOR: 2,
-    MODERATOR: 3,
-    CLIENT: 4
+    ADMIN_USER : "ADMIN_USER",
+    SIMULATOR : "SIMULATOR",
+    MODERATOR : "MODERATOR",
+    USER : "USER"
 };
 
 const defaultCallback = {
