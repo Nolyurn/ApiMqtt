@@ -1,10 +1,18 @@
 const mqtt = require("mqtt");
 
+/**
+ * Default usernames when not specified to constructor
+ * @type {{username: string, password: string}}
+ */
 const defaultParams = {
     username: "anonymous",
     password: "anonymous"
 };
 
+/**
+ * Privilege levels
+ * @type {{ADMIN_USER: string, SIMULATOR: string, MODERATOR: string, USER: string}}
+ */
 export const Privilege = {
     ADMIN_USER : "ADMIN_USER",
     SIMULATOR : "SIMULATOR",
@@ -12,11 +20,20 @@ export const Privilege = {
     USER : "USER"
 };
 
+/**
+ * Default callbacks when not specified to operations
+ * @type {{onSuccess: (()), onError: (())}}
+ */
 const defaultCallback = {
     onSuccess: () => {},
     onError: () => {}
 };
 
+/**
+ * Callback method fired to redirect validation tokens.
+ * @param topic {string} The topic of incoming message
+ * @param payload {ArrayBuffer} Incoming data
+ */
 function onMessage(topic, payload) {
     if(topic === "admin/event") {
         let message = JSON.parse(payload);
@@ -29,31 +46,56 @@ function onMessage(topic, payload) {
     }
 }
 
+/**
+ * Callback method fired when the client cannot connect or when a parsing error occurs.
+ * @param error The emitted error
+ */
 function onError(error) {
     if(typeof this._onError === "function") {
         this._onError(error);
     }
 }
 
+/**
+ * Emitted on successful (re)connection
+ * @param connack Received connack packet.
+ */
 function onConnect(connack) {
     if(typeof this._onConnect === "function") {
         this._onConnect(connack);
     }
 }
 
+/**
+ * Emitted when a reconnect starts.
+ */
 function onReconnect() {
     if(typeof this._onReconnect === "function") {
         this._onReconnect();
     }
 }
 
+/**
+ * Emitted when the client goes offline.
+ */
 function onOffline() {
     if(typeof this._onOffline === "function") {
         this._onOffline();
     }
 }
-
+/**
+ * Client object for an administration usage
+ */
 class Admin {
+
+    /**
+     * An admin-privileged client.
+     * @constructor
+     * @param url {string} The URL of our custom broker
+     * @param args {Object} Parameters to our client.
+     *                      - username (default : anonymous)
+     *                      - password (default : anonymous)
+     */
     constructor(url, args) {
         this._args = Object.assign({}, defaultParams, args);
 
@@ -70,6 +112,19 @@ class Admin {
 
     }
 
+    /**
+     * Sends a command to the broker to create a new user with given parameters.
+     * We're based on TLS/HTTPS to encrypt the request.
+     * @param username {string} The desired username
+     * @param password {string} The desired password
+     * @param privilege {string} The desired privilege. It can be :
+     *                           - Privilege.ADMIN_USER
+     *                           - Privilege.SIMULATOR
+     *                           - Privilege.MODERATOR
+     *                           - Privilege.USER
+     * @param callback {Object} Object including the callbacks on error and success or the operation.
+     *                          Should including onSuccess and onError attributes.
+     */
     createUser(username, password, privilege, callback = {}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
         callback = Object.assign({}, defaultCallback, callback);
@@ -84,6 +139,12 @@ class Admin {
 
     }
 
+    /**
+     * Sends a command to the broker to delete the user.
+     * @param username {string} The account's username to delete
+     * @param callback {Object} Object including the callback on error and success or the operation.
+     *                          Should including onSuccess and onError attributes.
+     */
     deleteUser(username, callback = {}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
         callback = Object.assign({}, defaultCallback, callback);
@@ -97,19 +158,24 @@ class Admin {
 
     }
 
-    on(event, func) {
+    /**
+     * Specifies callback on message received from the broker
+     * @param event {string} Type of event to catch
+     * @param callback {function} Callback when event happens
+     */
+    on(event, callback) {
         switch(event) {
             case "error" :
-                this._onError = func;
+                this._onError = callback;
                 break;
             case "connect" :
-                this._onConnect = func;
+                this._onConnect = callback;
                 break;
             case "reconnect" :
-                this._onReconnect = func;
+                this._onReconnect = callback;
                 break;
             case "offline" :
-                this._onOffline = func;
+                this._onOffline = callback;
                 break;
         }
     }
