@@ -141,14 +141,11 @@ class Moderator {
 
         callback = Object.assign({}, defaultCallback, callback);
 
-        let toSend = Object.assign({}, payload, defaultPayload);
+        let toSend = Object.assign({}, defaultPayload, payload, {token : token});
 
         this._ops[token] = callback;
-        // FIXME : Réorganiser la liste envoyée : toSend n'est pas au même level que le token
-        this._client.publish("sensor/start", JSON.stringify({
-            token: token,
-            toSend
-        }));
+
+        this._client.publish("sensor/start", JSON.stringify(toSend));
 
     }
 
