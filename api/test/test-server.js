@@ -5,8 +5,8 @@ let http     = require('http')
 
 //Settings applied to mqttServ
 let settings = {
-  host: 'localhost',	
-  port: 1883	//It should be 1883
+  host: 'localhost',    
+  port: 1883    //It should be 1883
 };
  
 //here we start mosca
@@ -24,9 +24,13 @@ function setup() {
   console.log('Mosca server is up and running')
 }
 
-//This function is used to authenticate user
 mqttServ.authenticate = function(client, username, password, callback) {
-	let authorized = (username === 'test' && password.toString() === 'test');
-	if (authorized) client.user = username;
-	callback(null, authorized);
+    let authorized = (username === 'test' && password.toString() === 'test');
+    if (authorized) client.user = username;
+    callback(null, authorized);
 }
+
+
+module.exports = {
+    server : mqttServ,
+};
