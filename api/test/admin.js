@@ -73,7 +73,7 @@ describe('Admin test', function() {
             });
         });
         it("deleteUser failed", function(done){
-            admin.deleteUser("fail", Privilege.CLIENT, {
+            admin.deleteUser("fail", {
                 onSuccess: function(){
                     done("deleteUser should call onError callback");
                 },

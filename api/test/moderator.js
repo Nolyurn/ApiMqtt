@@ -16,16 +16,7 @@ server.on('published', function(packet, client) {
     var response = {
         token: payload.token
     };
-    var shallSucceed;
-    switch(packet.topic){
-    case "sensor/start":
-        shallSucceed = payload.toSend.name;
-        break;
-    case "sensor/stop":
-        shallSucceed = payload.sensor;
-        break;
-    }
-    if(shallSucceed === "succeed"){
+    if(payload.name === "succeed"){
         response.success = true;
     } else {
         response.success = false;

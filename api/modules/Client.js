@@ -111,10 +111,6 @@ class Client {
         delete this._subs[topic];
     }
     
-    end(){
-        this._client.end();
-    }
-
     /**
      * Specifies callback on message received from the broker
      * @param event {string} Type of event to catch
@@ -139,6 +135,11 @@ class Client {
                 break;
         }
     }
+
+    end(){
+        this._client.end();
+    }
+
 }
 
 export default Client;

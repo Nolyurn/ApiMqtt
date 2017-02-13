@@ -181,6 +181,11 @@ class Admin {
                 break;
         }
     }
+
+    end(){
+        this._client.end();
+    }
+
 }
 
 export default Admin;
