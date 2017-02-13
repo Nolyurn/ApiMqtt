@@ -17,13 +17,13 @@ const defaultParams = {
  */
 function onMessage(topic, payload) {
     if(typeof this._onMessage === "function") {
-        this._onMessage(topic, JSON.parse(payload));
+        this._onMessage(topic.split("/", 2)[1], JSON.parse(payload));
     }
 
     let topicTemp = topic.split("/", 2)[1];
 
     if(typeof this._subs[topicTemp] === "function") {
-        this._subs[topicTemp](topic, JSON.parse(payload));
+        this._subs[topicTemp](topic.split("/", 2)[1], JSON.parse(payload));
     }
 }
 
@@ -46,7 +46,6 @@ function onConnect(connack) {
         this._onConnect(connack);
     }
 }
-
 
 /**
  * Emitted when a reconnect starts.

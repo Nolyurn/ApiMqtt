@@ -132,7 +132,7 @@ class Admin {
         callback = Object.assign({}, defaultCallback, callback);
         this._ops[token] = callback;
 
-        this._client.publish("admin/createUser", JSON.stringify({
+        this._client.publish("admin/create", JSON.stringify({
             token: token,
             username: username,
             password: password,
@@ -152,7 +152,7 @@ class Admin {
         callback = Object.assign({}, defaultCallback, callback);
         this._ops[token] = callback;
 
-        this._client.publish("admin/deleteUser", JSON.stringify({
+        this._client.publish("admin/delete", JSON.stringify({
             token: token,
             username: username,
         }));

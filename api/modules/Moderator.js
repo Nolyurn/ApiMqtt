@@ -11,9 +11,10 @@ const defaultParams = {
 
 /**
  * Default values for required parameters when a new sensor is created
- * @type {{min: number, max: number}}
+ * @type {{type: string, min: number, max: number}}
  */
-const defaultPayload = {
+const defaultTypePayload = {
+    type: "RAND_INT",
     min: 0,
     max: 100
 };
@@ -29,10 +30,10 @@ const defaultCallback = {
 
 /**
  * Sensors types
- * @type {{POSITIVE_NUMBER: string, PERCENT: string, ON_OFF: string, TEMPERATURE: string}}
+ * @type {{RAND_INT: string, PERCENT: string, ON_OFF: string, TEMPERATURE: string}}
  */
 export const Types = {
-    POSITIVE_NUMBER: "POSITIVE_NUMBER",
+    RAND_INT: "RAND_INT",
     PERCENT: "PERCENT",
     ON_OFF: "ON_OFF",
     TEMPERATURE: "TEMPERATURE"
@@ -127,7 +128,7 @@ class Moderator {
     /**
      * Send a payload to the broker in order to begin the simulation of a new sensor.
      * @param payload {object} Parameters for the sensor creation :
-     *                         - request : "create" or "delete"
+     *                         - name : The name of the topic where the sensor will send the value
      *                         - type : The sensor type (see Types),
      *                         - min : The minimum value of the random value sent by the simulator
      *                         - max : The maximum value of the random value sent by the simulator
@@ -141,7 +142,7 @@ class Moderator {
 
         callback = Object.assign({}, defaultCallback, callback);
 
-        let toSend = Object.assign({}, defaultPayload, payload, {token : token});
+        let toSend = Object.assign({type: defaultTypePayload}, payload, {token : token});
 
         this._ops[token] = callback;
 
@@ -153,7 +154,7 @@ class Moderator {
      * Deletes the sensor in parameter.
      * @param sensorName The sensor to delete
      * @param callback {Object} Object including the callbacks on error and success or the operation.
-     *                          Should including onSuccess and onError attributes.
+     *                          Should include onSuccess and onError attributes.
      */
     deleteSensor(sensorName, callback = {}) {
         let token = Math.random().toString(36).substr(2) + Math.random().toString(36).substr(2);
