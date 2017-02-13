@@ -111,7 +111,6 @@ class Admin {
         this._client.on("connect", onConnect.bind(this));
         this._client.on("reconnect", onReconnect.bind(this));
         this._client.on("offline", onOffline.bind(this));
-
     }
 
     /**
@@ -138,7 +137,6 @@ class Admin {
             password: password,
             privilege: privilege
         }));
-
     }
 
     /**
@@ -156,8 +154,6 @@ class Admin {
             token: token,
             username: username,
         }));
-
-
     }
 
     /**
