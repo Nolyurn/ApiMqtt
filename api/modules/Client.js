@@ -10,20 +10,24 @@ const defaultParams = {
 };
 
 /**
- * Callback method fired when a message comes from a subscribe topic.
+ * Callback method fired when a message comes from a subscribed topic.
  * If a callback function exists for the topic, the function fires it.
  * @param topic {string} The topic of incoming message
  * @param payload {ArrayBuffer} Incoming data
  */
 function onMessage(topic, payload) {
-    if(typeof this._onMessage === "function") {
-        this._onMessage(topic.split("/", 2)[1], JSON.parse(payload));
-    }
+    if (topic === "sensors/announce") {
+        this._sensors = JSON.parse(payload);
+    } else {
+        if (typeof this._onMessage === "function") {
+            this._onMessage(topic.split("/", 2)[1], JSON.parse(payload));
+        }
 
-    let topicTemp = topic.split("/", 2)[1];
+        let topicTemp = topic.split("/", 2)[1];
 
-    if(typeof this._subs[topicTemp] === "function") {
-        this._subs[topicTemp](topic.split("/", 2)[1], JSON.parse(payload));
+        if (typeof this._subs[topicTemp] === "function") {
+            this._subs[topicTemp](topic.split("/", 2)[1], JSON.parse(payload));
+        }
     }
 }
 
@@ -80,8 +84,10 @@ class Client {
     constructor(url, args) {
         this._args = Object.assign({}, defaultParams, args);
         this._subs = {};
+        this._sensors = [];
 
         this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
+        this._client.subscribe("sensor/announce");
 
         this._client.on("message", onMessage.bind(this));
         this._client.on("error", onError.bind(this));
@@ -108,6 +114,20 @@ class Client {
     unsubscribe(topic) {
         this._client.unsubscribe(topic);
         delete this._subs[topic];
+    }
+
+    /**
+     * Returns the array of the sensors on the simulator. It's refreshed every 5 seconds.
+     * @returns {Array} An array of objects with this structure :
+     *                  - name {string} The name of the topic
+     *                  - type {Object} Sensor specifications :
+     *                      - id {string} Type of generated random value
+     *                      - min {integer} The lowest bound of simulated value
+     *                      - max {integer} The highest bound of simulated value
+     *                  - frequency {integer} Number of values generated in a second     *
+     */
+    getTopics() {
+        return this._sensors;
     }
     
     /**
