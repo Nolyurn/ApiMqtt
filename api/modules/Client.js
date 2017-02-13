@@ -110,6 +110,10 @@ class Client {
         this._client.unsubscribe(topic);
         delete this._subs[topic];
     }
+    
+    end(){
+        this._client.end();
+    }
 
     /**
      * Specifies callback on message received from the broker

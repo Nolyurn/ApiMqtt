@@ -38,10 +38,12 @@ function onMessage(topic, payload) {
     if(topic === "admin/event") {
         let message = JSON.parse(payload);
         if(message.token in this._ops) {
-            if(typeof this._ops[message.token].onSuccess === "function" && message["success"])
+            if(typeof this._ops[message.token].onSuccess === "function" && message["success"]){
                 this._ops[message.token].onSuccess(message);
-            else if(typeof this._ops[message.token].onError === "function" && !message["success"])
+            }
+            else if(typeof this._ops[message.token].onError === "function" && !message["success"]){
                 this._ops[message.token].onError(message);
+            }
         }
     }
 }

@@ -189,6 +189,11 @@ class Moderator {
                 break;
         }
     }
+
+    end(){
+        this._client.end();
+    }
+
 }
 
 export default Moderator;
