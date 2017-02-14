@@ -3,8 +3,7 @@ let http     = require('http')
   , mosca    = require('mosca')
   , UM = require('./userManager');
 
-let TOPIC_ADMIN_REQUEST = "admin/request";
-let TOPIC_ADMIN_RESPONSE = "admin/event";
+const TOPIC_ADMIN_RESPONSE = "admin/event";
 
 //Settings applied to mqttServ
 let settings = {
@@ -40,7 +39,8 @@ function setup() {
 
         switch(client.role){
             case "ADMIN_USER":
-                authorized =    (topic == TOPIC_ADMIN_REQUEST);
+                authorized =    (topic.split('/')[0] == "admin")&&
+                                    (topic != TOPIC_ADMIN_RESPONSE)
                 break;
             case "SIMULATOR":
                 authorized =    (topic.split('/')[0] == "value")
@@ -81,37 +81,22 @@ function setup() {
     }
     console.log("Mosca up")
 }
-
+ 
 mqttServ.on('published', function(packet, client) {
     //packet contient : topic, payload, messageId, qos, retain
-
+    let response ="";
     switch(packet.topic){
-        case TOPIC_ADMIN_REQUEST:
-            let payload ={};
-            let response = "";
-
-            try {
-                payload = JSON.parse(packet.payload.toString());
-            }
-            catch (e) {
-                response = "Format JSON non respecte !";
-            }
-            
-            switch(payload.method){
-                case "createuser":
-                    response = UM.createUser(payload);
-                    break;
-                case "removeuser":
-                    response = UM.removeUser(payload);
-                    break;
-                case "setuserpassword":
-                    response = UM.setUserPassword(payload);
-                    break;
-            }
-            mqttServ.publish({topic:TOPIC_ADMIN_RESPONSE,payload:response})
+        case "admin/createUser":
+            response = UM.createUser(packet.payload);
             break;
-
+        case "admin/deleteUser":
+            response = UM.deleteUser(packet.payload);
+            break;
+        case "admin/updateUser":
+            response = UM.updateUser(packet.payload);
+            break;
     }
+    mqttServ.publish({topic:TOPIC_ADMIN_RESPONSE,payload:response})
 });
 
 UM.reset();
