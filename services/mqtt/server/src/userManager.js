@@ -32,6 +32,7 @@ exports.getUsers = function(){
   return users;
 }
 
+//A modifier
 exports.login = function(username, password){
   if(username in users){
       if(users[username].password=crypt(password)){
@@ -41,6 +42,7 @@ exports.login = function(username, password){
   return false;
 }
 
+//A modifier
 exports.getUserRole = function(username){
   if(username in users){
       return users[username].role;
@@ -73,25 +75,25 @@ exports.reset = function(){
 //Necessite des données sous la forme {"method":"createUser","username":"name","password":"pwd","role":"role",}
 exports.createUser = function(payload){
   if(!("token" in payload)){
-    return `{sucess:false, token:null, message:"no token in payload"}`; 
+    return `{sucess:false, token:null, payload:"no token in payload"}`; 
   }
   if(!("username" in payload)){
-    return `{sucess:false, token:$(payload.token), message:"no username in payload"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"no username in payload"}`; 
   }
   if(!("password" in payload)){
-    return `{sucess:false, token:$(payload.token), message:"no password in payload"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"no password in payload"}`; 
   }
   if(!("role" in payload)){
-    return `{sucess:false, token:$(payload.token), message:"no role in payload"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"no role in payload"}`; 
   }
 
   if(!(payload.role in ROLES)){
-    return `{sucess:false, token:$(payload.token), message:"this role does not exist"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"this role does not exist"}`; 
   }
 
   //Test si l'utilisateur existe déjà, si il existe, l'ajout est impossible (une option force dans le payload pourrait être à prévoir)
   if(redis_cli.get(payload.username)!=null){
-    return `{sucess:false, token:$(payload.token), message:"this username is ever used"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"this username is ever used"}`; 
   }
 
   redis_cli.set('admin', `{"password":${crypt(payload.password)},"role":${payload.role}}`)
@@ -101,15 +103,15 @@ exports.createUser = function(payload){
 
 exports.deleteUser = function(payload){
   if(!("token" in payload)){
-    return `{sucess:false, token:null, message:"no token in payload"}`; 
+    return `{sucess:false, token:null, payload:"no token in payload"}`; 
   }
   if(!("username" in payload)){
-    return `{sucess:false, token:$(payload.token), message:"no username in payload"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"no username in payload"}`; 
   }
 
   //Verifier si l'utilisateur existe
   if(redis_cli.get(payload.username)==null){
-    return `{sucess:false, token:$(payload.token), message:"this username does not exist"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"this username does not exist"}`; 
   }
 
   redis_cli.del(payload.username)
@@ -119,10 +121,10 @@ exports.deleteUser = function(payload){
 
 exports.updateUser = function(payload){
    if(!("token" in payload)){
-    return `{sucess:false, token:null, message:"no token in payload"}`; 
+    return `{sucess:false, token:null, payload:"no token in payload"}`; 
   }
   if(!("username" in payload)){
-    return `{sucess:false, token:$(payload.token), message:"no username in payload"}`; 
+    return `{sucess:false, token:$(payload.token), payload:"no username in payload"}`; 
   }
   
   //prendre le payload, le modifier et faire un set
