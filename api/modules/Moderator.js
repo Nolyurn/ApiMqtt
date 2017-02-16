@@ -6,7 +6,11 @@ const mqtt = require("mqtt");
  */
 const defaultParams = {
     username: "anonymous",
-    password: "anonymous"
+    password: "anonymous",
+    sensorTopic: "sensor",
+    sensorCreateTopic: "create",
+    sensorDeleteTopic: "delete",
+    sensorEventTopic: "event"
 };
 
 /**
@@ -45,7 +49,7 @@ export const Types = {
  * @param payload {ArrayBuffer} Incoming data
  */
 function onMessage(topic, payload) {
-    if(topic === "sensor/event") {
+    if(topic === this._args.sensorEventTopic + "/" + this._args.sensorEventTopic) {
         let message = JSON.parse(payload);
         if(message.token in this._ops) {
             if(typeof this._ops[message.token].onSuccess === "function" && message["success"]) {
@@ -113,7 +117,7 @@ class Moderator {
         this._args = Object.assign({}, defaultParams, args);
 
         this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
-        this._client.subscribe("sensor/event");
+        this._client.subscribe(this._args.sensorTopic + "/" + this._args.sensorEventTopic);
 
         this._ops = {};
 
@@ -146,7 +150,7 @@ class Moderator {
 
         this._ops[token] = callback;
 
-        this._client.publish("sensor/start", JSON.stringify(toSend));
+        this._client.publish(this._args.sensorTopic + "/" + this._args.sensorStartTopic, JSON.stringify(toSend));
 
     }
 
@@ -163,9 +167,9 @@ class Moderator {
 
         this._ops[token] = callback;
 
-        this._client.publish("sensor/stop", JSON.stringify({
+        this._client.publish(this._args.sensorTopic + "/" + this._args.sensorStopTopic, JSON.stringify({
             token: token,
-            sensor: sensorName,
+            name: sensorName,
         }));
     }
 

@@ -2,11 +2,16 @@ const mqtt = require("mqtt");
 
 /**
  * Default usernames when not specified to constructor
- * @type {{username: string, password: string}}
+ * @type {{username: string, password: string, sensorTopic: string, sensorStartTopic: string, sensorStopTopic: string, sensorAnnounceTopic: string, sensorEventTopic: string}}
  */
 const defaultParams = {
     username: "anonymous",
-    password: "anonymous"
+    password: "anonymous",
+    sensorTopic: "sensor",
+    sensorStartTopic: "start",
+    sensorStopTopic: "stop",
+    sensorAnnounceTopic: "announce",
+    valueTopic: "value"
 };
 
 /**
@@ -16,17 +21,19 @@ const defaultParams = {
  * @param payload {ArrayBuffer} Incoming data
  */
 function onMessage(topic, payload) {
-    if (topic === "sensor/announce") {
+    if (topic === this._args.sensorTopic + "/" + this._args.sensorAnnounceTopic) {
+        // If the message comes from the announce topic, we refresh the local data
         this._sensors = JSON.parse(payload);
     } else {
+        // Else, it's a client-subscribed topic
+        let customTopic = topic.substr(topic.indexOf("/")+1);
+
         if (typeof this._onMessage === "function") {
-            this._onMessage(topic.split("/", 2)[1], JSON.parse(payload));
+            this._onMessage(customTopic, JSON.parse(payload));
         }
 
-        let topicTemp = topic.split("/", 2)[1];
-
-        if (typeof this._subs[topicTemp] === "function") {
-            this._subs[topicTemp](topic.split("/", 2)[1], JSON.parse(payload));
+        if (typeof this._subs[customTopic] === "function") {
+            this._subs[customTopic](customTopic, JSON.parse(payload));
         }
     }
 }
@@ -77,9 +84,15 @@ class Client {
      * A basic-privilege client.
      * @constructor
      * @param url {string} The URL of our custom broker
-     * @param args {Object} Parameters to our client.
+     * @param args {Object} Parameters to our client. Modify topics only if your custom broker is using different topic names :
      *                      - username (default : anonymous)
      *                      - password (default : anonymous)
+     *                      - sensorTopic {string} (default : sensor)
+     *                      - sensorStartTopic {string} (default : start)
+     *                      - sensorStopTopic {string} (default: stop)
+     *                      - sensorAnnounceTopic {string} (default : announce)
+     *                      - valueTopic {string} (default : value)
+     *
      */
     constructor(url, args) {
         this._args = Object.assign({}, defaultParams, args);
@@ -87,7 +100,7 @@ class Client {
         this._sensors = [];
 
         this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
-        this._client.subscribe("sensor/announce");
+        this._client.subscribe(this._args.sensorTopic + "/" + this._args.sensorAnnounceTopic);
 
         this._client.on("message", onMessage.bind(this));
         this._client.on("error", onError.bind(this));
@@ -103,7 +116,7 @@ class Client {
      * @param callback {function} The fired function when a message comes from this topic
      */
     subscribe(topic, callback = () => {}){
-        this._client.subscribe("value/" + topic);
+        this._client.subscribe(this._args.valueTopic + "/" + topic);
         this._subs[topic] = callback;
     }
 
@@ -112,7 +125,7 @@ class Client {
      * @param topic {string} The topic to unsubcribe to
      */
     unsubscribe(topic) {
-        this._client.unsubscribe(topic);
+        this._client.unsubscribe(this._args.valueTopic + "/" + topic);
         delete this._subs[topic];
     }
 
@@ -124,7 +137,7 @@ class Client {
      *                      - id {string} Type of generated random value
      *                      - min {integer} The lowest bound of simulated value
      *                      - max {integer} The highest bound of simulated value
-     *                  - frequency {integer} Number of values generated in a second     *
+     *                  - frequency {integer} Number of values generated in a second
      */
     getTopics() {
         return this._sensors;

@@ -2,11 +2,15 @@ const mqtt = require("mqtt");
 
 /**
  * Default usernames when not specified to constructor
- * @type {{username: string, password: string}}
+ * @type {{username: string, password: string, adminTopic: string, adminCreateTopic: string, adminDeleteTopic: string, adminEventTopic: string}}
  */
 const defaultParams = {
     username: "anonymous",
-    password: "anonymous"
+    password: "anonymous",
+    adminTopic: "admin",
+    adminCreateTopic: "create",
+    adminDeleteTopic: "delete",
+    adminEventTopic: "event"
 };
 
 /**
@@ -35,7 +39,7 @@ const defaultCallback = {
  * @param payload {ArrayBuffer} Incoming data
  */
 function onMessage(topic, payload) {
-    if(topic === "admin/event") {
+    if(topic === this._args.adminTopic + "/" + this._args.adminEventTopic) {
         let message = JSON.parse(payload);
         if(message.token in this._ops) {
             if(typeof this._ops[message.token].onSuccess === "function" && message["success"]){
@@ -95,14 +99,15 @@ class Admin {
      * @constructor
      * @param url {string} The URL of our custom broker
      * @param args {Object} Parameters to our client.
-     *                      - username (default : anonymous)
-     *                      - password (default : anonymous)
+     *                      - username {string} (default : "anonymous")
+     *                      - password {string} (default : "anonymous")
+     *                      - adminEventTopic {string} (default : "admin")
      */
     constructor(url, args) {
         this._args = Object.assign({}, defaultParams, args);
 
         this._client = mqtt.connect(url, {username: this._args.username, password:this._args.password});
-        this._client.subscribe("admin/event");
+        this._client.subscribe(this._args.adminTopic + "/" + this._args.adminEventTopic);
 
         this._ops = {};
 
@@ -131,7 +136,7 @@ class Admin {
         callback = Object.assign({}, defaultCallback, callback);
         this._ops[token] = callback;
 
-        this._client.publish("admin/create", JSON.stringify({
+        this._client.publish(this._args.adminTopic + "/" + this._args.adminCreateTopic, JSON.stringify({
             token: token,
             username: username,
             password: password,
@@ -150,7 +155,7 @@ class Admin {
         callback = Object.assign({}, defaultCallback, callback);
         this._ops[token] = callback;
 
-        this._client.publish("admin/delete", JSON.stringify({
+        this._client.publish(this._args.adminTopic + "/" + this._args.adminDeleteTopic, JSON.stringify({
             token: token,
             username: username,
         }));
