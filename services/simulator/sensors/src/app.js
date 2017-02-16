@@ -7,7 +7,7 @@ let auth_user = process.env.AUTH_USER;
 let auth_pass = process.env.AUTH_PASS;
 let topics_start = process.env.TOPICS_START;
 let topics_stop = process.env.TOPICS_STOP;
-let topics_events = process.env.TOPICS_EVENTS;
+let topics_response = process.env.TOPICS_RESPONSE;
 let topics_announce = process.env.TOPICS_ANNOUNCE;
 let announce_freq = process.env.ANNOUNCE_FREQ;
 
@@ -20,10 +20,10 @@ for (let v of [broker_host, auth_user, auth_pass])
 
 /* Setting defaults. */
 broker_port = broker_port === undefined ? 9000 : broker_port;
-topics_start = topics_start === undefined ? 'sensors/start' : topics_start;
-topics_stop = topics_stop === undefined ? 'sensors/stop' : topics_stop;
-topics_events = topics_events === undefined ? 'sensors/events' : topics_events;
-topics_announce = topics_announce === undefined ? 'sensors' : topics_announce;
+topics_start = topics_start === undefined ? 'sensor/start' : topics_start;
+topics_stop = topics_stop === undefined ? 'sensor/stop' : topics_stop;
+topics_response = topics_response === undefined ? 'sensor/response' : topics_response;
+topics_announce = topics_announce === undefined ? 'sensor/announce' : topics_announce;
 announce_freq = announce_freq === undefined ? 5 : announce_freq;
 
 /* Setting callbacks: off we go! */
@@ -32,6 +32,6 @@ new SensorsSimulator(
     auth_user, auth_pass, announce_freq, {
         'start': topics_start, 
         'stop': topics_stop,
-        'events': topics_events,
+        'response': topics_response,
         'announce': topics_announce
     });
