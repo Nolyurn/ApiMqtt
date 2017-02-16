@@ -5,19 +5,19 @@ var mqtt = require('mqtt');
 
 var server = require('./test-server.js').server;
 
-// mosca broker binding
+//mocking server
 server.on('published', function(packet, client) {
-    if(packet.topic !== "admin/createUser"
-        && packet.topic !== "admin/deleteUser"){
+    if(packet.topic !== "admin/create"
+        && packet.topic !== "admin/delete"){
         return;
     }
     
     var payload = JSON.parse(packet.payload);
-    if(packet.topic === "admin/createUser" 
+    if(packet.topic === "admin/create" 
             && typeof payload.password == "undefined"){
         return;
     }
-    if(packet.topic === "admin/deleteUser" 
+    if(packet.topic === "admin/delete" 
             && typeof payload.password != "undefined"){
         return;
     }
@@ -32,6 +32,7 @@ server.on('published', function(packet, client) {
     }
     server.publish({topic:"admin/event",payload:JSON.stringify(response)});
 });
+
 
 var admin; 
 var mqttUrl = "mqtt://localhost:1883";
