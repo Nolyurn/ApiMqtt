@@ -18,6 +18,7 @@ export class SensorsSimulator {
         this.sensors = new SensorCollection();
         this.announce_timer = null;
         this.announce_on = topics.announce;
+        this.response = topics.response;
 
         this.subscriptions = {};
         this.subscriptions[topics.start] = this.start_sensor.bind(this);
@@ -81,18 +82,18 @@ export class SensorsSimulator {
      */
     request_handler(payload, op) {
         if(!payload.hasOwnProperty('token'))
-            /* No token: request ignored. We can't identify it on sensors/event. */
+            /* No token: request ignored. We can't identify it on sensors/response. */
             return;
 
         try {
             /* Try to perform the request operation ; all ops should throw errors when unsuccessful. */
             op(payload);
-            /* Emit a success event. */
-            this.uplink.publish(this.events, {'token': payload.token, 'status': 1});
+            /* Emit a success response. */
+            this.uplink.publish(this.response, {'token': payload.token, 'status': 1});
         }
         catch(err) {
-            /* An error occurred: publish the error under the token on sensors/event. */
-            this.uplink.publish(this.events, {'token': payload.token, 'status': 0, payload: err.message});
+            /* An error occurred: publish the error under the token on sensors/response. */
+            this.uplink.publish(this.response, {'token': payload.token, 'status': 0, payload: err.message});
         }
     }
 

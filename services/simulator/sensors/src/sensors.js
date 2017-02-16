@@ -28,7 +28,7 @@ class Sensor {
         let base_checks = [
             {param: 'name', check: (v) => (typeof(v) === 'string' || v instanceof String) && v.length > 1},
             {param: 'type', check: (v) => typeof(v) === 'object' && v.hasOwnProperty('id')},
-            {param: 'freq', check: (v) => !isNaN(v)}
+            {param: 'frequency', check: (v) => !isNaN(v)}
         ];
 
         /* Basic checks on properties. */
@@ -37,11 +37,11 @@ class Sensor {
                 throw new SensorError(format(ErrorMessage.INVALID_PAYLOAD, item.param));
 
         this.name = payload.name;
-        this.freq = parseFloat(payload.freq);
+        this.frequency = parseFloat(payload.frequency);
         this.timer = null;
 
         /* Frequency limit: 1 per second, at least. */
-        if(this.freq < 1) throw new SensorError(ErrorMessage.FREQUENCY_LIMIT);
+        if(this.frequency < 1) throw new SensorError(ErrorMessage.FREQUENCY_LIMIT);
 
         /* Type identification: this will throw errors when needed. */
         let sensor_type = find_type(payload.type.id);
@@ -53,17 +53,17 @@ class Sensor {
      * @param callback The simulator's callback.
      */
     schedule(callback) {
-        this.timer = setInterval(callback, Math.round(this.freq * 1000), this);
+        this.timer = setInterval(callback, Math.round(this.frequency * 1000), this);
     }
 
     /**
      * Returns the sensor as a JSON payload for announcements.
-     * @returns {{name: *, freq: (Number|*), type: ({name, freq, type}|*)}}
+     * @returns {{name: *, frequency: (Number|*), type: ({name, frequency, type}|*)}}
      */
     json() {
         return {
             'name': this.name,
-            'freq': this.freq,
+            'frequency': this.frequency,
             'type': this.type.json()
         }
     }

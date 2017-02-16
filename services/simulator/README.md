@@ -1,16 +1,26 @@
-# The simulation service #
+The simulation service
+======================
 
-This service must be setup using the infrastructure's `docker-compose.yml` file before it can be run.
-Use this file in order to set the following environment variables:
+The simulator is a MQTT client which runs within the broker's cluster as an
+additional service. Its role is to listen for sensor requests (start/stop) and
+publish on the appropriate `value/...` topic regularly.
 
-- `BROKER_HOST` : the hostname or IP to the MQTT broker.
-- `AUTH_USER` : the simulator's username.
-- `AUTH_PASS` : the associated password.
+The service's configuration is done using the environment variables set in the
+global `docker-compose.yml` file. The following parameters **must** be set:
 
-Other variables may be set but will fallback to defaults if they are not (see the file).
-At the moment, the simulator can:
-
-- Receive requests on `sensors/start` and `sensors/stop`.
-- Simulate sensors at the requested intervals.
-
-It doesn't handle its errors yet (fails silently), and the sensors model could be seriously improved.
+- `BROKER_HOST` is the broker's hostname within the Docker compose cluster. This
+is defined as `mqtt` by default, and there is little gain from changing it.
+- `BROKER_PORT` is the broker's port, by default 9000. This is used by both the
+simulator (connecting) and the broker (listening).
+- `AUTH_USER` is the username which can be used to obtain simulator privileges
+from the broker.
+- `AUTH_PASS` is the associated password for this account.
+- `TOPICS_START` is the topic on which to listen for creation requests. We
+recommend keeping the default value since it is also a default for the API.
+- `TOPICS_STOP` is the topic on which to listen for deletion requests (same
+advice).
+- `TOPICS_RESPONSE` is the topic on which to listen for request responses.
+- `TOPICS_ANNOUNCE` is the topic on which the simulator will regularly publish
+its list of sensors.
+- `ANNOUNCE_FREQ` is the period (in seconds) at which the list is sent on the
+announce topic.
