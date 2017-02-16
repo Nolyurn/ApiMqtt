@@ -16,7 +16,7 @@ const defaultParams = {
  * @param payload {ArrayBuffer} Incoming data
  */
 function onMessage(topic, payload) {
-    if (topic === "sensors/announce") {
+    if (topic === "sensor/announce") {
         this._sensors = JSON.parse(payload);
     } else {
         if (typeof this._onMessage === "function") {
