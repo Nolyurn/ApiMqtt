@@ -77,6 +77,15 @@ function onOffline() {
 }
 
 /**
+ * Emitted when the client is closed
+ */
+function onClose() {
+    if(typeof this._onClose === "function") {
+        this._onClose();
+    }
+}
+
+/**
  * Client object made to catch values on subscribed sensors.
  */
 class Client {
@@ -107,6 +116,7 @@ class Client {
         this._client.on("connect", onConnect.bind(this));
         this._client.on("reconnect", onReconnect.bind(this));
         this._client.on("offline", onOffline.bind(this));
+        this._client.on("close", onClose.bind(this));
 
     }
 
@@ -164,6 +174,9 @@ class Client {
                 break;
             case "offline" :
                 this._onOffline = callback;
+                break;
+            case "close" :
+                this._onClose = callback;
                 break;
         }
     }
