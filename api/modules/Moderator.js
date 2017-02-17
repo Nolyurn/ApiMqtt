@@ -8,8 +8,8 @@ const defaultParams = {
     username: "anonymous",
     password: "anonymous",
     sensorTopic: "sensor",
-    sensorCreateTopic: "create",
-    sensorDeleteTopic: "delete",
+    sensorStartTopic: "start",
+    sensorStopTopic: "stop",
     sensorEventTopic: "event"
 };
 
@@ -49,7 +49,7 @@ export const Types = {
  * @param payload {ArrayBuffer} Incoming data
  */
 function onMessage(topic, payload) {
-    if(topic === this._args.sensorEventTopic + "/" + this._args.sensorEventTopic) {
+    if(topic === this._args.sensorTopic + "/" + this._args.sensorEventTopic) {
         let message = JSON.parse(payload);
         if(message.token in this._ops) {
             if(typeof this._ops[message.token].onSuccess === "function" && message["success"]) {
