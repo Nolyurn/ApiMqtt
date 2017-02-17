@@ -55,13 +55,13 @@ describe('Client test', function() {
         });
         it("Connect mqtt server not found", function(done){
             var client = new Client("mqtt://localhost:1000", user);
-            client.on('error', function(){
-                client.end();
-                done();
-            });
             client.on('connect', function(){
                 client.end();
                 done("Connection did not failed on bad mqtt server");
+            });
+            client.on('close', function(){
+                client.end(); 
+                done();
             });
         });
         it("Connect succeed", function(done){
