@@ -2,15 +2,10 @@ const crypto = require('crypto')
   , redis  = require("redis");
 
 
-
 let redis_cli = null;
-try{
-  redis_cli = redis.createClient();
-  redis_cli.on('error', function(err){console.log("Fail to connect to Redis !")});  //Publish quelque part ???
-} catch(e){
-  console.log(e.message);
-}
- 
+
+redis_cli = redis.createClient();
+redis_cli.on('error', function(err){console.log("Fail to connect to Redis !")});  //Publish quelque part ???
 
 const key    = 'dessert';
     
