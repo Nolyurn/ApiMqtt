@@ -31,13 +31,20 @@ exports.getUsers = function(){
 }
 
 exports.login = function(username, password){
-  let userJSON = redis_cli.get(username);
-  if(userJSON != null){
-      if(JSON.parse(userJSON).password=crypt(password)){
-          return true;
+  let userJSON;
+
+  redis_cli.get(username, function(err, reply){
+    userJSON = reply
+
+    if(userJSON != null){
+      console.log(crypt(password))
+      console.log(JSON.parse(userJSON).password)
+      if(JSON.parse(userJSON).password==crypt(password)){
+        //true
       }
-  }
-  return false;
+    }
+    //false
+  });
 }
 
 exports.getUserRole = function(username){
@@ -51,23 +58,11 @@ exports.getUserRole = function(username){
 
 //Fonction à enlever plus tards
 exports.reset = function(){    
-  /*users = [];
-  users["admin"] = [];
-  users["admin"].password = crypt("admin");
-  users["admin"].role =ROLES.ADMIN_USER*/
 
   let password = crypt("admin");
   let role = ROLES.ADMIN_USER;
 
-  redis_cli.set('admin', `{"password":${password},"role":${role}}`)
-  //console.log("Hello")
-  let test = redis_cli.get('admin', function (err, reply) {
-    console.log(reply.toString())
-  })
-  
-  let test2 = redis_cli.get('admina', function (err, reply) {
-    console.log(reply)
-  })
+  redis_cli.set("admin", `{"password":"${password}","role":"${role}"}`)
 }
 
 //Necessite des données sous la forme {"method":"createUser","username":"name","password":"pwd","role":"role",}
