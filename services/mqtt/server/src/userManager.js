@@ -1,6 +1,8 @@
 const crypto = require('crypto')
   , redis  = require("redis");
 
+redis.client.on('error', function(err){console.log("Fail to connect to Redis !")});
+
 let redis_cli = null;
 try{
   redis_cli = redis.createClient();
@@ -32,22 +34,22 @@ exports.getUsers = function(){
   return users;
 }
 
-//A modifier
 exports.login = function(username, password){
-  if(username in users){
-      if(users[username].password=crypt(password)){
+  let userJSON = redis_cli.get(username);
+  if(userJSON != null){
+      if(JSON.parse(userJSON).password=crypt(password)){
           return true;
       }
   }
   return false;
 }
 
-//A modifier
 exports.getUserRole = function(username){
-  if(username in users){
-      return users[username].role;
-  }else{
+  if(redis_cli.get(username)==null){
       throw "user not found";
+  }else{
+      
+    return JSON.parse(redis_cli.get(username)).role;
   }
 }
 
