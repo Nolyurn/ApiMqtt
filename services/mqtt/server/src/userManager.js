@@ -91,9 +91,9 @@ exports.createUser = function(mqtt, payload){
 
   redis_cli.get(payload.username, function(err, reply){
     if(reply != null){
-      response =`{success:false, token:payload.token, payload:"this username is ever used"}`
+      response =`{success:false, token:$(payload.token), payload:"this username is ever used"}`
     }else{
-      response = `{success:true, token:payload.token}`;
+      response = `{success:true, token:$(payload.token)}`;
       redis_cli.set(`${payload.username}`, `{"password":${crypt(payload.password)},"role":${payload.role}}`);
     }
     mqtt.publish({topic:"admin/event",payload:`${response}`})
@@ -118,7 +118,7 @@ exports.deleteUser = function(mqtt, payload){
     if(reply == null){
       response = `{success:false, token:$(payload.token), payload:"this username does not exist"}`;
     }else{
-      response = `{success:true, token:${payload.token}`;
+      response = `{success:true, token:${payload.token}}`;
       redis_cli.del(payload.username)
     }
     mqtt.publish({topic:"admin/event",payload:`${response}`})
