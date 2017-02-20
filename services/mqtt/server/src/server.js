@@ -27,7 +27,7 @@ function setup() {
 
   mqttServ.authorizePublish = function(client, topic, payload, callback){
     let authorized = false;
-    switch(client.role){
+    switch(client.privilege){
       case "ADMIN_USER":
         authorized =    (topic.split('/')[0] == "admin")&&
                             (topic != "admin/event")
@@ -50,7 +50,7 @@ function setup() {
 
   mqttServ.authorizeSubscribe = function(client, topic, callback){
     let authorized = false;
-    switch(client.role){
+    switch(client.privilege){
       case "ADMIN_USER":
         authorized =  (topic == "admin/event");
         break;

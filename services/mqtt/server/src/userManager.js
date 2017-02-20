@@ -9,13 +9,13 @@ redis_cli.on('error', function(err){console.log("Fail to connect to Redis !")});
 
 const key    = 'dessert';
     
-const ROLES = {
+const PRIVILEGES = {
   ADMIN_USER:"ADMIN_USER",
   SIMULATOR:"SIMULATOR",
   MODERATOR:"MODERATOR",
   USER:"USER"
 }
-Object.freeze(ROLES);
+Object.freeze(PRIVILEGES);
 
 
 let users = {}
@@ -44,7 +44,7 @@ exports.login = function(username, password, client, callback){
       //Ajouter le try catch du
       if(userJSON.password==crypt(password)){
         client.username = username;
-        client.role = userJSON.role;
+        client.privilege = userJSON.privilege;
         callback(null,true)
       }else{
         callback(null,false)
@@ -59,12 +59,12 @@ exports.login = function(username, password, client, callback){
 exports.reset = function(){    
 
   let password = crypt("admin");
-  let role = ROLES.ADMIN_USER;
+  let privilege = PRIVILEGES.ADMIN_USER;
 
-  redis_cli.set("admin", `{"password":"${password}","role":"${role}"}`)
+  redis_cli.set("admin", `{"password":"${password}","privilege":"${privilege}"}`)
 }
 
-//Necessite des données sous la forme {"method":"createUser","username":"name","password":"pwd","role":"role",}
+//Necessite des données sous la forme {"method":"createUser","username":"name","password":"pwd","privilege":"privilege",}
 exports.createUser = function(mqtt, payload){
   let response="";
   if(!("token" in payload)){
@@ -76,12 +76,12 @@ exports.createUser = function(mqtt, payload){
   if(!("password" in payload)){
     response = `{"success":false, "token":${payload.token}, payload:"no password in payload"}`; 
   }
-  if(!("role" in payload)){
-    response = `{"success":false, "token":${payload.token}, payload:"no role in payload"}`; 
+  if(!("privilege" in payload)){
+    response = `{"success":false, "token":${payload.token}, payload:"no privilege in payload"}`; 
   }
 
-  if(!(payload.role in ROLES)){
-    response = `{"success":false, "token":${payload.token}), payload:"this role does not exist"}`; 
+  if(!(payload.privilege in PRIVILEGES)){
+    response = `{"success":false, "token":${payload.token}), payload:"this privilege does not exist"}`; 
   }
 
   if(response!=""){
@@ -94,7 +94,7 @@ exports.createUser = function(mqtt, payload){
       response =`{"success":false, "token":${payload.token}, payload:"this username is ever used"}`
     }else{
       response = `{"success":true, "token":${payload.token}}`;
-      redis_cli.set(`${payload.username}`, `{"password":${crypt(payload.password)},"role":${payload.role}}`);
+      redis_cli.set(`${payload.username}`, `{"password":${crypt(payload.password)},"privilege":${payload.privilege}}`);
     }
     mqtt.publish({topic:"admin/event",payload:`${response}`})
   }) 
@@ -138,7 +138,7 @@ exports.updateUser = function(mqtt, payload){
     if(reply == null){
       response = `{"success":false, token:$(payload.token), payload:"this username does not exist"}`;
     }else{
-      //Donner le nouveau password et/ou role, role doit être dans les role possible
+      //Donner le nouveau password et/ou privilege, privilege doit être dans les privilege possible
       response = `{"success":true, token:${payload.token}`;
       redis_cli.set()
     }
