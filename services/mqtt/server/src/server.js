@@ -83,13 +83,13 @@ mqttServ.on('published', function(packet, client) {
     }
   }
   switch(packet.topic){
-    case "admin/createUser":
+    case "admin/create":
       if(payload != ""){UM.createUser(mqttServ, payload)}
       break;
-    case "admin/deleteUser":
+    case "admin/delete":
       if(payload != ""){UM.deleteUser(mqttServ, payload)}
       break;
-    /*case "admin/updateUser":
+    /*case "admin/update":
       response = UM.updateUser(mqttServ, payload);
       break;*/
   }
