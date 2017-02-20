@@ -3,8 +3,6 @@ let http     = require('http')
   , mosca    = require('mosca')
   , UM = require('./userManager');
 
-const TOPIC_ADMIN_RESPONSE = "admin/event";
-
 //Settings applied to mqttServ
 let settings = {
   host: 'localhost',    
@@ -23,84 +21,80 @@ httpServ.listen(3000);
  
 //Fired when the mqtt server is ready
 function setup() {
-    //This function is used to authenticate user
-    mqttServ.authenticate = function(client, username, password, callback) {
-        let authorized = (UM.login(username, password));
-        if (authorized) {
-            client.username = username;
-            client.role = UM.getUserRole(username); 
-        }
+  mqttServ.authenticate = function(client, username, password, callback) {
+    UM.login(username, password, client, callback); 
+  }
 
-        callback(null, authorized);
+  mqttServ.authorizePublish = function(client, topic, payload, callback){
+    let authorized = false;
+    switch(client.role){
+      case "ADMIN_USER":
+        authorized =    (topic.split('/')[0] == "admin")&&
+                            (topic != "admin/event")
+        break;
+      case "SIMULATOR":
+        authorized =    (topic.split('/')[0] == "value")
+        break;
+      case "MODERATOR":
+        authorized =    (topic.split('/')[0] == "sensor")&&(
+                            (topic.split('/')[1] == "create") ||
+                            (topic.split('/')[1] == "delete")
+                        )
+        break;
+      case "USER":
+
+        break;
     }
+    callback(null,authorized);
+  }
 
-    mqttServ.authorizePublish = function(client, topic, payload, callback){
-        let authorized = false;
-
-        switch(client.role){
-            case "ADMIN_USER":
-                authorized =    (topic.split('/')[0] == "admin")&&
-                                    (topic != TOPIC_ADMIN_RESPONSE)
-                break;
-            case "SIMULATOR":
-                authorized =    (topic.split('/')[0] == "value")
-                break;
-            case "MODERATOR":
-                authorized =    (topic.split('/')[0] == "sensor")&&(
-                                    (topic.split('/')[1] == "create") ||
-                                    (topic.split('/')[1] == "delete")
-                                )
-                break;
-            case "USER":
-
-                break;
-        }
-        callback(null,authorized);
+  mqttServ.authorizeSubscribe = function(client, topic, callback){
+    let authorized = false;
+    switch(client.role){
+      case "ADMIN_USER":
+        authorized =  (topic == "admin/event");
+        break;
+      case "SIMULATOR":
+        authorized =  (topic.split('/')[0] == "sensor")&&(
+                        (topic.split('/')[1] == "create") ||
+                        (topic.split('/')[1] == "delete")
+                      )
+        break;
+      case "MODERATOR":
+        authorized =  (topic.split('/')[0] == "value")
+        break;
+      case "USER":
+        authorized =  (topic.split('/')[0] == "value")
+        break;
     }
-
-    mqttServ.authorizeSubscribe = function(client, topic, callback){
-        let authorized = false;
-        switch(client.role){
-            case "ADMIN_USER":
-                authorized =    (topic == TOPIC_ADMIN_RESPONSE);
-                break;
-            case "SIMULATOR":
-                authorized =    (topic.split('/')[0] == "sensor")&&(
-                                    (topic.split('/')[1] == "create") ||
-                                    (topic.split('/')[1] == "delete")
-                                )
-                break;
-            case "MODERATOR":
-                authorized =    (topic.split('/')[0] == "value")
-                break;
-            case "USER":
-                authorized =    (topic.split('/')[0] == "value")
-                break;
-        }
-        callback(null,authorized);
-    }
-    console.log("Mosca up")
+    callback(null,authorized);
+  }
+  console.log("Mosca up")
 }
  
 mqttServ.on('published', function(packet, client) {
-    //packet contient : topic, payload, messageId, qos, retain
-    let response ="";
-    switch(packet.topic){
-        case "admin/createUser":
-            response = UM.createUser(packet.payload);
-            break;
-        case "admin/deleteUser":
-            response = UM.deleteUser(packet.payload);
-            break;
-        case "admin/updateUser":
-            response = UM.updateUser(packet.payload);
-            break;
+  let payload ="";
+
+  if(packet.topic.split('/')[0] == "admin" && packet.topic!="admin/event"){
+    try {
+      payload = JSON.parse(packet.payload.toString());
+    }catch(e){
+      mqttServ.publish({topic:"admin/event",payload:`{success:false, payload:"payload must be in JSON format"}`});
     }
-    mqttServ.publish({topic:TOPIC_ADMIN_RESPONSE,payload:response})
+  }
+  switch(packet.topic){
+    case "admin/createUser":
+      if(payload != ""){UM.createUser(mqttServ, payload)}
+      break;
+    case "admin/deleteUser":
+      if(payload != ""){UM.deleteUser(mqttServ, payload)}
+      break;
+    /*case "admin/updateUser":
+      response = UM.updateUser(mqttServ, payload);
+      break;*/
+  }
 });
 
 UM.reset();
 
-module.exports = {
-    server : mqttServ,
-};
+exports.server = mqttServ;

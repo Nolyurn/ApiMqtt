@@ -30,30 +30,29 @@ exports.getUsers = function(){
   return users;
 }
 
-exports.login = function(username, password){
-  let userJSON;
-
+exports.login = function(username, password, client, callback){
+ 
   redis_cli.get(username, function(err, reply){
-    userJSON = reply
+    let userJSON;
+    try{
+      userJSON = JSON.parse(reply)
+    }catch(e){
+      callback(null,false)
+    }
 
     if(userJSON != null){
-      console.log(crypt(password))
-      console.log(JSON.parse(userJSON).password)
-      if(JSON.parse(userJSON).password==crypt(password)){
-        //true
+      //Ajouter le try catch du
+      if(userJSON.password==crypt(password)){
+        client.username = username;
+        client.role = userJSON.role;
+        callback(null,true)
+      }else{
+        callback(null,false)
       }
-    }
-    //false
+    }else{
+      callback(null,false)
+    }   
   });
-}
-
-exports.getUserRole = function(username){
-  if(redis_cli.get(username)==null){
-      throw "user not found";
-  }else{
-      
-    return JSON.parse(redis_cli.get(username)).role;
-  }
 }
 
 //Fonction à enlever plus tards
@@ -66,62 +65,83 @@ exports.reset = function(){
 }
 
 //Necessite des données sous la forme {"method":"createUser","username":"name","password":"pwd","role":"role",}
-exports.createUser = function(payload){
+exports.createUser = function(mqtt, payload){
+  let response="";
   if(!("token" in payload)){
-    return `{sucess:false, token:null, payload:"no token in payload"}`; 
+    response = `{success:false, token:null, payload:"no token in payload"}`; 
   }
   if(!("username" in payload)){
-    return `{sucess:false, token:$(payload.token), payload:"no username in payload"}`; 
+    response = `{success:false, token:$(payload.token), payload:"no username in payload"}`; 
   }
   if(!("password" in payload)){
-    return `{sucess:false, token:$(payload.token), payload:"no password in payload"}`; 
+    response = `{success:false, token:$(payload.token), payload:"no password in payload"}`; 
   }
   if(!("role" in payload)){
-    return `{sucess:false, token:$(payload.token), payload:"no role in payload"}`; 
+    response = `{success:false, token:$(payload.token), payload:"no role in payload"}`; 
   }
 
   if(!(payload.role in ROLES)){
-    return `{sucess:false, token:$(payload.token), payload:"this role does not exist"}`; 
+    response = `{success:false, token:$(payload.token), payload:"this role does not exist"}`; 
   }
 
-  //Test si l'utilisateur existe déjà, si il existe, l'ajout est impossible (une option force dans le payload pourrait être à prévoir)
-  if(redis_cli.get(payload.username)!=null){
-    return `{sucess:false, token:$(payload.token), payload:"this username is ever used"}`; 
+  if(response!=""){
+    mqtt.publish({topic:"admin/event",payload:`${response}`})
+    return false;
   }
 
-  redis_cli.set('admin', `{"password":${crypt(payload.password)},"role":${payload.role}}`)
-
-  return `{sucess:true, token:payload.token}`;
+  redis_cli.get(payload.username, function(err, reply){
+    if(reply != null){
+      response =`{success:false, token:payload.token, payload:"this username is ever used"}`
+    }else{
+      response = `{success:true, token:payload.token}`;
+      redis_cli.set(`${payload.username}`, `{"password":${crypt(payload.password)},"role":${payload.role}}`);
+    }
+    mqtt.publish({topic:"admin/event",payload:`${response}`})
+  }) 
 }
 
-exports.deleteUser = function(payload){
+exports.deleteUser = function(mqtt, payload){
+  let response="";
   if(!("token" in payload)){
-    return `{sucess:false, token:null, payload:"no token in payload"}`; 
+    response = `{success:false, token:null, payload:"no token in payload"}`; 
   }
   if(!("username" in payload)){
-    return `{sucess:false, token:$(payload.token), payload:"no username in payload"}`; 
+    response = `{success:false, token:$(payload.token), payload:"no username in payload"}`; 
   }
 
-  //Verifier si l'utilisateur existe
-  if(redis_cli.get(payload.username)==null){
-    return `{sucess:false, token:$(payload.token), payload:"this username does not exist"}`; 
+  if(response!=""){
+    mqtt.publish({topic:"admin/event",payload:`${response}`})
+    return false;
   }
 
-  redis_cli.del(payload.username)
-
-  return `{sucess:true, token:payload.token}`;
+  redis_cli.get(payload.username, function(err, reply){
+    if(reply == null){
+      response = `{success:false, token:$(payload.token), payload:"this username does not exist"}`;
+    }else{
+      response = `{success:true, token:${payload.token}`;
+      redis_cli.del(payload.username)
+    }
+    mqtt.publish({topic:"admin/event",payload:`${response}`})
+  }) 
 }
-
-exports.updateUser = function(payload){
-   if(!("token" in payload)){
-    return `{sucess:false, token:null, payload:"no token in payload"}`; 
+/*
+exports.updateUser = function(mqtt, payload){
+  let response = "";
+  if(!("token" in payload)){
+    response = `{success:false, token:null, payload:"no token in payload"}`; 
   }
   if(!("username" in payload)){
-    return `{sucess:false, token:$(payload.token), payload:"no username in payload"}`; 
+    response = `{success:false, token:$(payload.token), payload:"no username in payload"}`; 
   }
-  
-  //prendre le payload, le modifier et faire un set
 
-
-  return `{sucess:true, token:payload.token}`;
-}
+  redis_cli.get(payload.username, function(err, reply){
+    if(reply == null){
+      response = `{success:false, token:$(payload.token), payload:"this username does not exist"}`;
+    }else{
+      //Donner le nouveau password et/ou role, role doit être dans les role possible
+      response = `{success:true, token:${payload.token}`;
+      redis_cli.set()
+    }
+    mqtt.publish({topic:"admin/event",payload:`${response}`})
+  }) 
+}*/
