@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+	"build": "exit 0",
     "start": "babel-node src/server.js",
     "test": "mocha --compilers js:babel-register"
   },
