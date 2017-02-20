@@ -79,27 +79,11 @@ describe("admin methods", function(){
                     done("Cannot connect with user account");
                 });
                 userClient.on('connect', function(){
-                    client.publish('admin/request', JSON.stringify({
-                        method:"setuserpassword",
-                        username:"testuser",
-                        password:"password"
-                    }));
-                });
-                step = "update";
-                break;
-            case "update":
-                expect(message.toString()).toEqual("Password of user : testuser has been changed with success.");
-                var userClient = mqtt.connect('mqtt://localhost:1883', {username:"testuser", password:"password"});
-                userClient.on('error', function(){
-                    done("Cannot connect with user account after password change");
-                });
-                userClient.on('connect', function(){
-                    client.publish('admin/request', JSON.stringify({
-                        method:"removeuser",
+                    client.publish('admin/delete', JSON.stringify({
                         username:"testuser"
                     }));
                 });
-                step="delete";
+                step = "delete";
                 break;
             case "delete":
                 expect(message.toString()).toEqual("User : testuser has been removed with success.");
@@ -115,11 +99,10 @@ describe("admin methods", function(){
                 break;
             }
         });
-        client.publish('admin/request', JSON.stringify({
-            method:"createuser",
+        client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword",
-            role:"USER"
+            privilege:"USER"
         }));
     });
     it("Cannot create user : user already exists", function(done){
@@ -129,18 +112,16 @@ describe("admin methods", function(){
             case "firstcreate":
                 step = "test";
                 expect(message.toString()).toEqual("user : testuser created with success !");
-                client.publish('admin/request', JSON.stringify({
-                    method:"createuser",
+                client.publish('admin/create', JSON.stringify({
                     username:"testuser",
                     password:"testpassword",
-                    role:"USER"
+                    privilege:"USER"
                 }));
                 break;
             case "test":
                 step = "clear";
                 expect(message.toString()).toEqual("The username is ever used !");
-                client.publish('admin/request', JSON.stringify({
-                    method:"deleteuser",
+                client.publish('admin/delete', JSON.stringify({
                     username:"testuser"
                 }));
                 break;
@@ -150,11 +131,10 @@ describe("admin methods", function(){
                 break;
             }
         });
-        client.publish('admin/request', JSON.stringify({
-            method:"createuser",
+        client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword",
-            role:"USER"
+            privilege:"USER"
         }));
     });
     it("Cannot create user : bad role", function(done){
@@ -162,11 +142,10 @@ describe("admin methods", function(){
             expect(message.toString()).toEqual("The username is ever used !");
             done();
         });
-        client.publish('admin/request', JSON.stringify({
-            method:"createuser",
+        client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword",
-            role:"OUPS"
+            privilege:"OUPS"
         }));
     });
     it("Cannot create user : no username", function(done){
@@ -174,8 +153,7 @@ describe("admin methods", function(){
             expect(message.toString()).toEqual("INVALID DATA : username field not found !");
             done();
         });
-        client.publish('admin/request', JSON.stringify({
-            method:"createuser"
+        client.publish('admin/create', JSON.stringify({
         }));
     });
     it("Cannot create user : no password", function(done){
@@ -183,8 +161,7 @@ describe("admin methods", function(){
             expect(message.toString()).toEqual("INVALID DATA : password field not found !");
             done();
         });
-        client.publish('admin/request', JSON.stringify({
-            method:"createuser",
+        client.publish('admin/create', JSON.stringify({
             username:"testuser"
         }));
     });
@@ -193,18 +170,17 @@ describe("admin methods", function(){
             expect(message.toString()).toEqual("INVALID DATA : role field not found !");
             done();
         });
-        client.publish('admin/request', JSON.stringify({
-            method:"createuser",
+        client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword"
         }));
     });
-    it("Admin call, no method", function(done){
+    it("Cannot delete user : no username", function(done){
         client.on('message', function(topic, message){
-            expect(message.toString()).toEqual("error undefined for this test case");
+            expect(message.toString()).toEqual("INVALID DATA : username field not found !");
             done();
         });
-        client.publish('admin/request', JSON.stringify({
+        client.publish('admin/delete', JSON.stringify({
         }));
     });
 });
