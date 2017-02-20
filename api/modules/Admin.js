@@ -19,7 +19,6 @@ const defaultParams = {
  */
 export const Privilege = {
     ADMIN_USER : "ADMIN_USER",
-    SIMULATOR : "SIMULATOR",
     MODERATOR : "MODERATOR",
     USER : "USER"
 };
@@ -125,7 +124,6 @@ class Admin {
      * @param password {string} The desired password
      * @param privilege {string} The desired privilege. It can be :
      *                           - Privilege.ADMIN_USER
-     *                           - Privilege.SIMULATOR
      *                           - Privilege.MODERATOR
      *                           - Privilege.USER
      * @param callback {Object} Object including the callbacks on error and success or the operation.
