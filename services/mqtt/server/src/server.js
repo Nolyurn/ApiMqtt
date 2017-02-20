@@ -79,7 +79,7 @@ mqttServ.on('published', function(packet, client) {
     try {
       payload = JSON.parse(packet.payload.toString());
     }catch(e){
-      mqttServ.publish({topic:"admin/event",payload:`{success:false, payload:"payload must be in JSON format"}`});
+      mqttServ.publish({topic:"admin/event",payload:`{"success":false, "payload":"payload must be in JSON format"}`});
     }
   }
   switch(packet.topic){

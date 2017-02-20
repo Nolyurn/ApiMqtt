@@ -1,11 +1,21 @@
 const crypto = require('crypto')
   , redis  = require("redis");
 
+const REDIS_PORT = 6379;
 
 let redis_cli = null;
 
-redis_cli = redis.createClient();
-redis_cli.on('error', function(err){console.log("Fail to connect to Redis !")});  //Publish quelque part ???
+redis_cli = redis.createClient({  
+  port:REDIS_PORT,
+  retry_strategy: function (options) {
+    if (options.error && options.error.code === 'ECONNREFUSED') {
+      // End reconnecting on a specific error and flush all commands with a individual error 
+      console.log('Fail to connect to Redis !');
+    }
+    return 3000;
+  }
+});
+//redis_cli.on('error', function(err){console.log(err)});  //Publish quelque part ???
 
 const key    = 'dessert';
     
@@ -67,6 +77,9 @@ exports.reset = function(){
 //Necessite des données sous la forme {"method":"createUser","username":"name","password":"pwd","privilege":"privilege",}
 exports.createUser = function(mqtt, payload){
   let response="";
+  if(redis_cli == null){
+    response = `{"success":false, "token":null, payload:"Redis is not connected"}`; 
+  }
   if(!("token" in payload)){
     response = `{"success":false, "token":null, payload:"no token in payload"}`; 
   }
@@ -79,7 +92,7 @@ exports.createUser = function(mqtt, payload){
   if(!("privilege" in payload)){
     response = `{"success":false, "token":${payload.token}, payload:"no privilege in payload"}`; 
   }
-
+  console.log(response);
   if(!(payload.privilege in PRIVILEGES)){
     response = `{"success":false, "token":${payload.token}), payload:"this privilege does not exist"}`; 
   }
@@ -102,6 +115,9 @@ exports.createUser = function(mqtt, payload){
 
 exports.deleteUser = function(mqtt, payload){
   let response="";
+  if(redis_cli == null){
+    response = `{"success":false, "token":null, payload:"Redis is not connected"}`; 
+  }
   if(!("token" in payload)){
     response = `{"success":false, "token":null, payload:"no token in payload"}`; 
   }
