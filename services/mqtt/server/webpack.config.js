@@ -6,8 +6,9 @@ module.exports = {
     target: 'node',
     externals: [nodeExternals()],
     output: {
-        path: './dist',
-        filename: 'simulator.js'
+        path: __dirname + '/dist',
+		publicPath: '/',
+		filename: 'bundle.js'
     },
     module: {
         loaders: [{
