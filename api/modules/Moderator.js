@@ -20,7 +20,8 @@ const defaultParams = {
 const defaultTypePayload = {
     type: "RAND_INT",
     min: 0,
-    max: 100
+    max: 100,
+    unit: "C"
 };
 
 /**
@@ -33,14 +34,16 @@ const defaultCallback = {
 };
 
 /**
- * Sensors types
- * @type {{RAND_INT: string, PERCENT: string, ON_OFF: string, TEMPERATURE: string}}
+ * Sensor types
+ * @type {{RAND_INT: string, RAND_FLOAT: string, ON_OFF: string, RAND_BOOLEAN: string, OPEN_CLOSE: string, ROOM_TEMPERATURE: string}}
  */
 export const Types = {
     RAND_INT: "RAND_INT",
-    PERCENT: "PERCENT",
+    RAND_FLOAT: "RAND_FLOAT",
     ON_OFF: "ON_OFF",
-    TEMPERATURE: "TEMPERATURE"
+    RAND_BOOLEAN: "RAND_BOOLEAN",
+    OPEN_CLOSE: "OPEN_CLOSE",
+    ROOM_TEMPERATURE: "TEMPERATURE"
 };
 
 /**
@@ -134,8 +137,9 @@ class Moderator {
      * @param payload {object} Parameters for the sensor creation :
      *                         - name : The name of the topic where the sensor will send the value
      *                         - type : The sensor type (see Types),
-     *                         - min : The minimum value of the random value sent by the simulator
-     *                         - max : The maximum value of the random value sent by the simulator
+     *                         - min : The minimum value if type is RAND_INT (Default : 0)
+     *                         - max : The maximum value if type is RAND_INT (Default : 100)
+     *                         - unit : The unit of the Temperature if type is ROOM_TEMPERATURE (Default : 'C')
      *                         - interval : Number of values by second.
      *                         - token : "fkFIfjrk5fR"
      * @param callback {Object} Object including the callbacks on error and success or the operation.
