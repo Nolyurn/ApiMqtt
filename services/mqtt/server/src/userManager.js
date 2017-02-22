@@ -7,6 +7,7 @@ let redis_cli = null;
 
 redis_cli = redis.createClient({  
   port:REDIS_PORT,
+  host:'redis',
   retry_strategy: function (options) {
     if (options.error && options.error.code === 'ECONNREFUSED') {
       // End reconnecting on a specific error and flush all commands with a individual error 
