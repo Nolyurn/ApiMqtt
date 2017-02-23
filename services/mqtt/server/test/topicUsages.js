@@ -21,7 +21,7 @@ var simulator = {
 };
 
 //check subscribe authorization based on qos (not set to client request if subscription refused
-function checkAuthorizedSubscription(client, topic, doneCallback, shouldBeAuthorized){
+function checkAuthorizedSubscription(user, topic, doneCallback, shouldBeAuthorized){
     var client = mqtt.connect('mqtt://localhost:1883', user);
     client.subscribe(topic, {qos:0}, function(err, grant){
         client.end();
@@ -41,11 +41,14 @@ function checkAuthorizedSubscription(client, topic, doneCallback, shouldBeAuthor
     });
 }
 
-function checkAuthorizedPublication(user, userCheck, topic, doneCallback, authorized){
+function checkAuthorizedPublication(user, userCheck, topic, doneCallback, authorized, checkTopic){
+    if(checkTopic == undefined){
+        checkTopic = topic;
+    }
     var done = false;
     var client = mqtt.connect('mqtt://localhost:1883', user);
     var checker = mqtt.connect('mqtt://localhost:1883', userCheck);
-    checker.subscribe(topic);
+    checker.subscribe(checkTopic);
     checker.on('message', function(){
         done = true;
         checker.end();
@@ -55,8 +58,10 @@ function checkAuthorizedPublication(user, userCheck, topic, doneCallback, author
             doneCallback("Publish should be forbidden");
         }
     });
-    client.publish(topic, 'test');
-    client.end();
+    setTimeout(function(){
+        client.publish(topic, 'test');
+        client.end();
+    }, 100);
     setTimeout(function(){
         if(done){
             return;
@@ -67,7 +72,7 @@ function checkAuthorizedPublication(user, userCheck, topic, doneCallback, author
         } else {
             doneCallback();
         }
-    }, 1500);
+    }, 200);
 }
 describe("topic usage", function(){
     before(function(done){
@@ -79,7 +84,7 @@ describe("topic usage", function(){
         adminClient.subscribe('admin/event');
         adminClient.on('message', function(topic, message){
             if(message.length > 0 && 
-                    message.toString().indexOf("created with success !") < 0){
+                    message.toString().indexOf('"success":true') < 0){
                 adminClient.end();
                 done(message.toString());
             }
@@ -90,39 +95,40 @@ describe("topic usage", function(){
             }
         });
         adminClient.on('connect', function(){
-            adminClient.publish('admin/request', JSON.stringify({
-                method:"createuser",
-                username:"user",
-                password:"password",
-                role:"USER"
+            adminClient.publish('admin/create', JSON.stringify({
+                username:user.username,
+                password:user.password,
+                privilege:"USER",
+                token:1
             }));
-            adminClient.publish('admin/request', JSON.stringify({
-                method:"createuser",
-                username:"moderator",
-                password:"password",
-                role:"MODERATOR"
+            adminClient.publish('admin/create', JSON.stringify({
+                username:moderator.username,
+                password:moderator.password,
+                privilege:"MODERATOR",
+                token:2
             }));
-            adminClient.publish('admin/request', JSON.stringify({
-                method:"createuser",
-                username:"simulator",
-                password:"password",
-                role:"SIMULATOR"
+            adminClient.publish('admin/create', JSON.stringify({
+                username:simulator.username,
+                password:simulator.password,
+                privilege:"SIMULATOR",
+                token:3
             }));
         })
     });
     /*simple user
-     * cannot :
-     *      subscribe/publish on admin/request, admin/event, sensor/create, sensor/delete, sensors/events
-     *      publish on value/#
-     * can : 
-     *      subscribe on value/#
      */
     describe("simple user", function(){
-        it("subscription refused on admin/request", function(done){
-            checkAuthorizedSubscription(user, 'admin/request', done, false);
+        it("subscription refused on admin/create", function(done){
+            checkAuthorizedSubscription(user, 'admin/create', done, false);
         });
-        it("publish refused on admin/request", function(done){//TODO not a good test
-            checkAuthorizedPublication(user, adminUser, 'admin/request', done, false);
+        it("publish refused on admin/create", function(done){
+            checkAuthorizedPublication(user, adminUser, 'admin/create', done, false, 'admin/event');
+        });
+        it("subscription refused on admin/delete", function(done){
+            checkAuthorizedSubscription(user, 'admin/delete', done, false);
+        });
+        it("publish refused on admin/delete", function(done){
+            checkAuthorizedPublication(user, adminUser, 'admin/delete', done, false, 'admin/event');
         });
         it("subscription refused on admin/event", function(done){
             checkAuthorizedSubscription(user, 'admin/event', done, false);
@@ -130,23 +136,29 @@ describe("topic usage", function(){
         it("publish refused on admin/event", function(done){
             checkAuthorizedPublication(user, adminUser, 'admin/event', done, false);
         });
-        it("subscription refused on sensor/create", function(done){
-            checkAuthorizedSubscription(user, 'sensor/create', done, false);
+        it("subscription refused on sensor/start", function(done){
+            checkAuthorizedSubscription(user, 'sensor/start', done, false);
         });
-        it("publish refused on sensor/create", function(done){
-            checkAuthorizedPublication(user, simulator, 'sensor/create', done, false);
+        it("publish refused on sensor/start", function(done){
+            checkAuthorizedPublication(user, simulator, 'sensor/start', done, false);
         });
-        it("subscription refused on sensor/delete", function(done){
-            checkAuthorizedSubscription(user, 'sensor/delete', done, false);
+        it("subscription refused on sensor/stop", function(done){
+            checkAuthorizedSubscription(user, 'sensor/stop', done, false);
         });
-        it("publish refused on sensor/delete", function(done){
-            checkAuthorizedPublication(user, simulator, 'sensor/delete', done, false);
+        it("publish refused on sensor/stop", function(done){
+            checkAuthorizedPublication(user, simulator, 'sensor/stop', done, false);
         });
-        it("subscription refused on sensors/events", function(done){
-            checkAuthorizedSubscription(user, 'sensors/events', done, false);
+        it("subscription refused on sensor/event", function(done){
+            checkAuthorizedSubscription(user, 'sensor/event', done, false);
         });
-        it("publish refused on sensors/events", function(done){
-            checkAuthorizedPublication(user, moderator, 'sensors/events', done, false);
+        it("publish refused on sensor/event", function(done){
+            checkAuthorizedPublication(user, moderator, 'sensor/event', done, false);
+        });
+        it("subscription authorized on sensor/announce", function(done){
+            checkAuthorizedSubscription(user, 'sensor/announce', done, true);
+        });
+        it("publish refused on sensor/announce", function(done){
+            checkAuthorizedPublication(user, moderator, 'sensor/announce', done, false);
         });
         it("subscription authorized on value/#", function(done){
             checkAuthorizedSubscription(user, 'value/test', done, true);
@@ -156,20 +168,19 @@ describe("topic usage", function(){
         });
     });
     /*moderator
-     * cannot :
-     *      subscribe/publish on admin/request, admin/event
-     *      subscribe on sensor/create, sensor/delete
-     *      publish on value/#, sensor/events
-     * can : 
-     *      publish on sensor/create, sensor/delete
-     *      subscribe on value/#, sensor/events
      */
     describe("moderator", function(){
-        it("subscription refused on admin/request", function(done){
-            checkAuthorizedSubscription(moderator, 'admin/request', done, false);
+        it("subscription refused on admin/create", function(done){
+            checkAuthorizedSubscription(moderator, 'admin/create', done, false);
         });
-        it("publish refused on admin/request", function(done){//TODO not a good test
-            checkAuthorizedPublication(moderator, adminUser, 'admin/request', done, false);
+        it("publish refused on admin/create", function(done){
+            checkAuthorizedPublication(moderator, adminUser, 'admin/create', done, false, 'admin/event');
+        });
+        it("subscription refused on admin/delete", function(done){
+            checkAuthorizedSubscription(moderator, 'admin/delete', done, false);
+        });
+        it("publish refused on admin/delete", function(done){
+            checkAuthorizedPublication(moderator, adminUser, 'admin/delete', done, false, 'admin/event');
         });
         it("subscription refused on admin/event", function(done){
             checkAuthorizedSubscription(moderator, 'admin/event', done, false);
@@ -177,23 +188,29 @@ describe("topic usage", function(){
         it("publish refused on admin/event", function(done){
             checkAuthorizedPublication(moderator, adminUser, 'admin/event', done, false);
         });
-        it("subscription refused on sensor/create", function(done){
-            checkAuthorizedSubscription(moderator, 'sensor/create', done, false);
+        it("subscription refused on sensor/start", function(done){
+            checkAuthorizedSubscription(moderator, 'sensor/start', done, false);
         });
-        it("publish allowed on sensor/create", function(done){
-            checkAuthorizedPublication(moderator, simulator, 'sensor/create', done, true);
+        it("publish allowed on sensor/start", function(done){
+            checkAuthorizedPublication(moderator, simulator, 'sensor/start', done, true);
         });
-        it("subscription refused on sensor/delete", function(done){
-            checkAuthorizedSubscription(moderator, 'sensor/delete', done, false);
+        it("subscription refused on sensor/stop", function(done){
+            checkAuthorizedSubscription(moderator, 'sensor/stop', done, false);
         });
-        it("publish allowed on sensor/delete", function(done){
-            checkAuthorizedPublication(moderator, simulator, 'sensor/delete', done, true);
+        it("publish allowed on sensor/stop", function(done){
+            checkAuthorizedPublication(moderator, simulator, 'sensor/stop', done, true);
         });
-        it("subscription allowed on sensors/events", function(done){
-            checkAuthorizedSubscription(moderator, 'sensors/events', done, true);
+        it("subscription allowed on sensor/event", function(done){
+            checkAuthorizedSubscription(moderator, 'sensor/event', done, true);
         });
-        it("publish refused on sensors/events", function(done){
-            checkAuthorizedPublication(moderator, moderator, 'sensors/events', done, false);
+        it("publish refused on sensor/event", function(done){
+            checkAuthorizedPublication(moderator, moderator, 'sensor/event', done, false);
+        });
+        it("subscription authorized on sensor/announce", function(done){
+            checkAuthorizedSubscription(moderator, 'sensor/announce', done, true);
+        });
+        it("publish refused on sensor/announce", function(done){
+            checkAuthorizedPublication(moderator, user, 'sensor/announce', done, false);
         });
         it("subscription allowed on value/#", function(done){
             checkAuthorizedSubscription(moderator, 'value/test', done, true);
@@ -203,19 +220,19 @@ describe("topic usage", function(){
         });
     });
     /*simulator
-     * cannot :
-     *      subscribe/publish on admin/request, admin/event
-     *      publish on sensor/create, sensor/delete
-     * can : 
-     *      subscribe on sensor/create, sensor/delete
-     *      publish on value/#, sensor/events
      */
     describe("simulator", function(){
-        it("subscription refused on admin/request", function(done){
-            checkAuthorizedSubscription(simulator, 'admin/request', done, false);
+        it("subscription refused on admin/create", function(done){
+            checkAuthorizedSubscription(simulator, 'admin/create', done, false);
         });
-        it("publish refused on admin/request", function(done){//TODO not a good test
-            checkAuthorizedPublication(simulator, adminUser, 'admin/request', done, false);
+        it("publish refused on admin/create", function(done){
+            checkAuthorizedPublication(simulator, adminUser, 'admin/create', done, false, 'admin/event');
+        });
+        it("subscription refused on admin/delete", function(done){
+            checkAuthorizedSubscription(simulator, 'admin/delete', done, false);
+        });
+        it("publish refused on admin/delete", function(done){
+            checkAuthorizedPublication(simulator, adminUser, 'admin/delete', done, false, 'admin/event');
         });
         it("subscription refused on admin/event", function(done){
             checkAuthorizedSubscription(simulator, 'admin/event', done, false);
@@ -223,44 +240,51 @@ describe("topic usage", function(){
         it("publish refused on admin/event", function(done){
             checkAuthorizedPublication(simulator, adminUser, 'admin/event', done, false);
         });
-        it("subscription allowed on sensor/create", function(done){
-            checkAuthorizedSubscription(simulator, 'sensor/create', done, true);
+        it("subscription allowed on sensor/start", function(done){
+            checkAuthorizedSubscription(simulator, 'sensor/start', done, true);
         });
-        it("publish refused on sensor/create", function(done){
-            checkAuthorizedPublication(simulator, simulator, 'sensor/create', done, false);
+        it("publish refused on sensor/start", function(done){
+            checkAuthorizedPublication(simulator, simulator, 'sensor/start', done, false);
         });
-        it("subscription allowed on sensor/delete", function(done){
-            checkAuthorizedSubscription(simulator, 'sensor/delete', done, true);
+        it("subscription allowed on sensor/stop", function(done){
+            checkAuthorizedSubscription(simulator, 'sensor/stop', done, true);
         });
-        it("publish refused on sensor/delete", function(done){
-            checkAuthorizedPublication(simulator, simulator, 'sensor/delete', done, false);
+        it("publish refused on sensor/stop", function(done){
+            checkAuthorizedPublication(simulator, simulator, 'sensor/stop', done, false);
         });
-        it("subscription refused on sensors/events", function(done){
-            checkAuthorizedSubscription(simulator, 'sensors/events', done, false);
+        it("subscription refused on sensor/event", function(done){
+            checkAuthorizedSubscription(simulator, 'sensor/event', done, false);
         });
-        it("publish allowed on sensors/events", function(done){
-            checkAuthorizedPublication(simulator, moderator, 'sensor/events', done, true);
+        it("publish allowed on sensor/event", function(done){
+            checkAuthorizedPublication(simulator, moderator, 'sensor/event', done, true);
         });
-        it("subscription allowed on value/#", function(done){
-            checkAuthorizedSubscription(simulator, 'value/test', done, true);
+        it("subscription refused on sensor/announce", function(done){
+            checkAuthorizedSubscription(simulator, 'sensor/announce', done, false);
+        });
+        it("publish authorized on sensor/announce", function(done){
+            checkAuthorizedPublication(simulator, user, 'sensor/announce', done, true);
+        });
+        it("subscription refused on value/#", function(done){
+            checkAuthorizedSubscription(simulator, 'value/test', done, false);
         });
         it("publish allowed on value/#", function(done){
             checkAuthorizedPublication(simulator, user, 'value/test', done, true);
         });
     });
     /*admin
-     * cannot :
-     *      subscribe/publish on sensor/create, sensor/delete, sensor/events, value/#
-     * can : 
-     *      subscribe/publish on admin/request
-     *      subscribe admin/event
      */
     describe("admin", function(){
-        it("subscription allowed on admin/request", function(done){
-            checkAuthorizedSubscription(simulator, 'admin/request', done, true);
+        it("subscription refused on admin/create", function(done){
+            checkAuthorizedSubscription(simulator, 'admin/create', done, false);
         });
-        it("publish allowed on admin/request", function(done){//TODO not a good test
-            checkAuthorizedPublication(adminUser, adminUser, 'admin/request', done, true);
+        it("publish allowed on admin/create", function(done){
+            checkAuthorizedPublication(adminUser, adminUser, 'admin/create', done, true, 'admin/event');
+        });
+        it("subscription refused on admin/delete", function(done){
+            checkAuthorizedSubscription(simulator, 'admin/delete', done, false);
+        });
+        it("publish allowed on admin/delete", function(done){
+            checkAuthorizedPublication(adminUser, adminUser, 'admin/delete', done, true, 'admin/event');
         });
         it("subscription allowed on admin/event", function(done){
             checkAuthorizedSubscription(adminUser, 'admin/event', done, true);
@@ -268,23 +292,29 @@ describe("topic usage", function(){
         it("publish refused on admin/event", function(done){
             checkAuthorizedPublication(adminUser, adminUser, 'admin/event', done, false);
         });
-        it("subscription refused on sensor/create", function(done){
-            checkAuthorizedSubscription(adminUser, 'sensor/create', done, false);
+        it("subscription refused on sensor/start", function(done){
+            checkAuthorizedSubscription(adminUser, 'sensor/start', done, false);
         });
-        it("publish refused on sensor/create", function(done){
-            checkAuthorizedPublication(adminUser, simulator, 'sensor/create', done, false);
+        it("publish refused on sensor/start", function(done){
+            checkAuthorizedPublication(adminUser, simulator, 'sensor/start', done, false);
         });
-        it("subscription refused on sensor/delete", function(done){
-            checkAuthorizedSubscription(adminUser, 'sensor/delete', done, false);
+        it("subscription refused on sensor/stop", function(done){
+            checkAuthorizedSubscription(adminUser, 'sensor/stop', done, false);
         });
-        it("publish refused on sensor/delete", function(done){
-            checkAuthorizedPublication(adminUser, simulator, 'sensor/delete', done, false);
+        it("publish refused on sensor/stop", function(done){
+            checkAuthorizedPublication(adminUser, simulator, 'sensor/stop', done, false);
         });
-        it("subscription refused on sensors/events", function(done){
-            checkAuthorizedSubscription(adminUser, 'sensors/events', done, false);
+        it("subscription refused on sensor/event", function(done){
+            checkAuthorizedSubscription(adminUser, 'sensor/event', done, false);
         });
-        it("publish refused on sensors/events", function(done){
-            checkAuthorizedPublication(adminUser, moderator, 'sensor/events', done, false);
+        it("publish refused on sensor/event", function(done){
+            checkAuthorizedPublication(adminUser, moderator, 'sensor/event', done, false);
+        });
+        it("subscription refused on sensor/announce", function(done){
+            checkAuthorizedSubscription(adminUser, 'sensor/announce', done, false);
+        });
+        it("publish refused on sensor/announce", function(done){
+            checkAuthorizedPublication(adminUser, user, 'sensor/announce', done, false);
         });
         it("subscription refused on value/#", function(done){
             checkAuthorizedSubscription(adminUser, 'value/test', done, false);

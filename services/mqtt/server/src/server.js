@@ -31,16 +31,18 @@ function setup() {
     let authorized = false;
     switch(client.privilege){
       case "ADMIN_USER":
-        authorized =    (topic.split('/')[0] == "admin")&&
-                            (topic != "admin/event")
+        authorized =   (topic == "admin/create")
+                            || (topic == "admin/delete")
         break;
       case "SIMULATOR":
         authorized =    (topic.split('/')[0] == "value")
+                            || (topic == "sensor/announce")
+                            || (topic == "sensor/event")
         break;
       case "MODERATOR":
         authorized =    (topic.split('/')[0] == "sensor")&&(
-                            (topic.split('/')[1] == "create") ||
-                            (topic.split('/')[1] == "delete")
+                            (topic.split('/')[1] == "start") ||
+                            (topic.split('/')[1] == "stop")
                         )
         break;
       case "USER":
@@ -52,21 +54,25 @@ function setup() {
 
   mqttServ.authorizeSubscribe = function(client, topic, callback){
     let authorized = false;
+    
     switch(client.privilege){
       case "ADMIN_USER":
         authorized =  (topic == "admin/event");
         break;
       case "SIMULATOR":
         authorized =  (topic.split('/')[0] == "sensor")&&(
-                        (topic.split('/')[1] == "create") ||
-                        (topic.split('/')[1] == "delete")
-                      )
+                            (topic.split('/')[1] == "start") ||
+                            (topic.split('/')[1] == "stop")
+                        )
         break;
       case "MODERATOR":
         authorized =  (topic.split('/')[0] == "value")
+                        || (topic == "sensor/announce")
+                        || (topic == "sensor/event");
         break;
       case "USER":
         authorized =  (topic.split('/')[0] == "value")
+                        || (topic == "sensor/announce");
         break;
     }
     callback(null,authorized);

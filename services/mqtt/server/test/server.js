@@ -73,20 +73,23 @@ describe("admin methods", function(){
         client.on('message', function(topic, message){
             switch(step){
             case "create":
-                expect(message.toString()).toEqual("user : testuser created with success !");
+                var payload = JSON.parse(message.toString());
+                expect(payload.success).toBe(true);
                 var userClient = mqtt.connect('mqtt://localhost:1883', {username:"testuser", password:"testpassword"});
                 userClient.on('error', function(){
                     done("Cannot connect with user account");
                 });
                 userClient.on('connect', function(){
+                    step = "delete";
                     client.publish('admin/delete', JSON.stringify({
-                        username:"testuser"
+                        username:"testuser",
+                        token:2
                     }));
                 });
-                step = "delete";
                 break;
             case "delete":
-                expect(message.toString()).toEqual("User : testuser has been removed with success.");
+                var payload = JSON.parse(message.toString());
+                expect(payload.success).toBe(true);
                 var userClient = mqtt.connect('mqtt://localhost:1883', {username:"testuser", password:"password"});
                 userClient.on('error', function(){
                     userClient.end();
@@ -102,7 +105,8 @@ describe("admin methods", function(){
         client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword",
-            privilege:"USER"
+            privilege:"USER",
+            token:1
         }));
     });
     it("Cannot create user : user already exists", function(done){
@@ -111,22 +115,28 @@ describe("admin methods", function(){
             switch(step){
             case "firstcreate":
                 step = "test";
-                expect(message.toString()).toEqual("user : testuser created with success !");
+                var payload = JSON.parse(message.toString());
+                expect(payload.success).toBe(true);
                 client.publish('admin/create', JSON.stringify({
                     username:"testuser",
                     password:"testpassword",
-                    privilege:"USER"
+                    privilege:"USER",
+                    token:2
                 }));
                 break;
             case "test":
                 step = "clear";
-                expect(message.toString()).toEqual("The username is ever used !");
+                var payload = JSON.parse(message.toString());
+                expect(payload.success).toBe(false);
+                expect(payload.payload).toBe("this username is ever used");
                 client.publish('admin/delete', JSON.stringify({
-                    username:"testuser"
+                    username:"testuser",
+                    token:3
                 }));
                 break;
             case "clear":
-                expect(message.toString()).toEqual("User : testuser has been removed with success.");
+                var payload = JSON.parse(message.toString());
+                expect(payload.success).toBe(true);
                 done();
                 break;
             }
@@ -134,53 +144,69 @@ describe("admin methods", function(){
         client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword",
-            privilege:"USER"
+            privilege:"USER",
+            token:1
         }));
     });
     it("Cannot create user : bad role", function(done){
         client.on('message', function(topic, message){
-            expect(message.toString()).toEqual("The username is ever used !");
+            var payload = JSON.parse(message.toString());
+            expect(payload.success).toBe(false);
+            expect(payload.payload).toBe("this privilege does not exist");
             done();
         });
         client.publish('admin/create', JSON.stringify({
             username:"testuser",
             password:"testpassword",
-            privilege:"OUPS"
+            privilege:"OUPS",
+            token:1
         }));
     });
     it("Cannot create user : no username", function(done){
         client.on('message', function(topic, message){
-            expect(message.toString()).toEqual("INVALID DATA : username field not found !");
+            var payload = JSON.parse(message.toString());
+            expect(payload.success).toBe(false);
+            expect(payload.payload).toBe("no username in payload");
             done();
         });
         client.publish('admin/create', JSON.stringify({
+            token:1
         }));
     });
     it("Cannot create user : no password", function(done){
         client.on('message', function(topic, message){
-            expect(message.toString()).toEqual("INVALID DATA : password field not found !");
-            done();
-        });
-        client.publish('admin/create', JSON.stringify({
-            username:"testuser"
-        }));
-    });
-    it("Cannot create user : no role", function(done){
-        client.on('message', function(topic, message){
-            expect(message.toString()).toEqual("INVALID DATA : role field not found !");
+            var payload = JSON.parse(message.toString());
+            expect(payload.success).toBe(false);
+            expect(payload.payload).toBe("no password in payload");
             done();
         });
         client.publish('admin/create', JSON.stringify({
             username:"testuser",
-            password:"testpassword"
+            token:1
+        }));
+    });
+    it("Cannot create user : no role", function(done){
+        client.on('message', function(topic, message){
+            var payload = JSON.parse(message.toString());
+            expect(payload.success).toBe(false);
+            expect(payload.payload).toBe("no privilege in payload");
+            done();
+        });
+        client.publish('admin/create', JSON.stringify({
+            username:"testuser",
+            password:"testpassword",
+            token:1
         }));
     });
     it("Cannot delete user : no username", function(done){
         client.on('message', function(topic, message){
-            expect(message.toString()).toEqual("INVALID DATA : username field not found !");
+            var payload = JSON.parse(message.toString());
+            expect(payload.success).toBe(false);
+            expect(payload.payload).toBe("no username in payload");
             done();
         });
         client.publish('admin/delete', JSON.stringify({
+            token:1
         }));
     });
 });

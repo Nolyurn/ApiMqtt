@@ -64,11 +64,11 @@ exports.Redis =
   createUser : function(mqtt, payload){
     let response = "";
     if(dataStore == null){
-      response = `{"success":false, "token":null, payload:"Redis is not connected"}`; 
+      response = `{"success":false, "token":null, "payload":"Redis is not connected"}`; 
     }
     dataStore.get(payload.username, function(err, reply){
       if(reply != null){
-        response =`{"success":false, "token":${payload.token}, payload:"this username is ever used"}`
+        response =`{"success":false, "token":${payload.token}, "payload":"this username is ever used"}`
       }else{
         response = `{"success":true, "token":${payload.token}}`;
         dataStore.set(`${payload.username}`, `{"password":${crypt(payload.password)},"privilege":${payload.privilege}}`);
@@ -78,12 +78,12 @@ exports.Redis =
   },
   deleteUser:function(mqtt, payload){
     if(dataStore == null){
-      response = `{"success":false, "token":null, payload:"Redis is not connected"}`; 
+      response = `{"success":false, "token":null, "payload":"Redis is not connected"}`; 
     }
     dataStore.get(payload.username, function(err, reply){
       let response = ""
       if(reply == null){
-        response = `{"success":false, "token":${payload.token}, payload:"this username does not exist"}`;
+        response = `{"success":false, "token":${payload.token}, "payload":"this username does not exist"}`;
       }else{
         response = `{"success":true, "token":${payload.token}}`;
         dataStore.del(payload.username)
@@ -106,39 +106,41 @@ exports.RAM =
     let userJSON = null;
     if(username in dataStore){
       try{
-        userJSON = JSON.parse(dataStore[username])
+        userJSON = JSON.parse(dataStore[username]);
       }catch(e){
-        callback(null,false)
+        callback(null,false);
       }
 
       if(userJSON.password==crypt(password.toString())){
         client.privilege = userJSON.privilege;
-        callback(null,true)
+        client.username = username;
+        callback(null,true);
+      } else {
+          callback(null,false);
       }
     }else{
-      callback(null,false)
+      callback(null,false);
     }
   },
   createUser : function(mqtt, payload){
     let response= "";
 
     if(payload.username in dataStore){
-      response =`{"success":false, "token":${payload.token}, payload:"this username is ever used"}`
+      response =`{"success":false, "token":${payload.token}, "payload":"this username is ever used"}`
     }else{
       response = `{"success":true, "token":${payload.token}}`;
       dataStore[payload.username] = [];
-      dataStore[payload.username] = `{"password":${crypt(payload.password)},"privilege":${payload.privilege}}`
+      dataStore[payload.username] = `{"password":"${crypt(payload.password)}","privilege":"${payload.privilege}"}`
     }
-
     mqtt.publish({topic:"admin/event",payload:`${response}`});
   },
   deleteUser:function(mqtt,payload){
     let response ="";
 
     if(!(payload.username in dataStore)){
-      response = `{"success":false, "token":${payload.token}, payload:"this username does not exist"}`; 
+      response = `{"success":false, "token":${payload.token}, "payload":"this username does not exist"}`; 
     }else{
-      delete dataStore[key];
+      delete dataStore[payload.username];
       response = `{"success":true, "token":${payload.token}}`; 
     }
     
