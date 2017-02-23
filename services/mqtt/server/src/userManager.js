@@ -73,7 +73,6 @@ exports.createUser = function(mqtt, payload){
     return false;
   }
 
-  //create
   storage.createUser(mqtt,payload);
 }
 
