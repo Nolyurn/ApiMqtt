@@ -21,6 +21,8 @@ httpServ.listen(3000);
  
 //Fired when the mqtt server is ready
 function setup() {
+  UM.setStorageMode("RAM"); //Env docker (RAM | Redis)
+
   mqttServ.authenticate = function(client, username, password, callback) {
     UM.login(username, password, client, callback); 
   }
@@ -94,7 +96,5 @@ mqttServ.on('published', function(packet, client) {
       break;*/
   }
 });
-
-UM.reset();
 
 exports.server = mqttServ;
