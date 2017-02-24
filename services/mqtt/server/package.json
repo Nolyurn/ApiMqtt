@@ -4,17 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha server.test.js"
+    "build": "webpack",
+    "start": "node dist/mqtt.js",
+    "test": "mocha --compilers js:babel-register"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "mosca": "^2.2.0"
-  },
-  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.3.2",
+    "crypto": "0.0.3",
     "expect": "^1.20.2",
     "mocha": "^3.2.0",
-    "mqtt": "^2.2.1"
+    "mosca": "^2.2.0",
+    "redis": "^2.6.5",
+    "webpack": "^2.2.1",
+    "webpack-node-externals": "^1.5.4"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-es2015": "^6.18.0"
   }
 }
