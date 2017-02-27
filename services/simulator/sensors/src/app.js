@@ -19,7 +19,7 @@ for (let v of [broker_host, auth_user, auth_pass])
             'BROKER_HOST, AUTH_USER, AUTH_PASS.');
 
 /* Setting defaults. */
-broker_port = broker_port === undefined ? 9000 : broker_port;
+broker_port = broker_port === undefined ? 1883 : broker_port;
 topics_start = topics_start === undefined ? 'sensor/start' : topics_start;
 topics_stop = topics_stop === undefined ? 'sensor/stop' : topics_stop;
 topics_response = topics_response === undefined ? 'sensor/response' : topics_response;
