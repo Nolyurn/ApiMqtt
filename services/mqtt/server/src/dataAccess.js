@@ -1,5 +1,6 @@
 const redis  = require("redis"),
-      crypto = require('crypto');
+      crypto = require('crypto'),
+      util = require("./util");
 
 const REDIS_PORT = 6379; //Env docker
 
@@ -64,13 +65,13 @@ exports.Redis =
   createUser : function(mqtt, payload){
     let response = "";
     if(dataStore == null){
-      response = JSON.stringify({"success":false, "token":null, "payload":"Redis is not connected"}); 
+      response = util.payloadResponse(false, null, "Redis is not connected"); 
     }
     dataStore.get(payload.username, function(err, reply){
       if(reply != null){
-        response =JSON.stringify({"success":false, "token":payload.token, "payload":"this username is ever used"})
+        response = util.payloadResponse(false, payload.token, "this username is ever used")
       }else{
-        response = JSON.stringify({"success":true, "token":payload.token});
+        response = util.payloadResponse(true, payload.token, "success");
         dataStore.set(payload.username, JSON.stringify({"password":crypt(payload.password),"privilege":payload.privilege}));
       }
       mqtt.publish({topic:"admin/event",payload:response})
@@ -100,7 +101,7 @@ exports.RAM =
     let password = crypt("admin");
     let privilege = PRIVILEGES.ADMIN_USER;
 
-    dataStore["admin"] = `{"password":"${password}","privilege":"${privilege}"}`
+    dataStore["admin"] = JSON.stringify({"password":password,"privilege":privilege});
   },
   login : function(username, password, client, callback){
     let userJSON = null;
@@ -126,11 +127,11 @@ exports.RAM =
     let response= "";
 
     if(payload.username in dataStore){
-      response =`{"success":false, "token":${payload.token}, "payload":"this username is ever used"}`
+      response = util.payloadResponse(false, payload.token, "this username is ever used");
     }else{
-      response = `{"success":true, "token":${payload.token}}`;
+      response = util.payloadResponse(true, payload.token, "success");
       dataStore[payload.username] = [];
-      dataStore[payload.username] = `{"password":"${crypt(payload.password)}","privilege":"${payload.privilege}"}`
+      dataStore[payload.username] = JSON.stringify({"password":crypt(payload.password),"privilege":payload.privilege})
     }
     mqtt.publish({topic:"admin/event",payload:`${response}`});
   },
@@ -138,10 +139,10 @@ exports.RAM =
     let response ="";
 
     if(!(payload.username in dataStore)){
-      response = `{"success":false, "token":${payload.token}, "payload":"this username does not exist"}`; 
+      response = util.payloadResponse(false, payload.token, "this username does not exist"); 
     }else{
       delete dataStore[payload.username];
-      response = `{"success":true, "token":${payload.token}}`; 
+      response = util.payloadResponse(true, payload.token,"success"); 
     }
     
     mqtt.publish({topic:"admin/event",payload:`${response}`})
