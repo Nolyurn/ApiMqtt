@@ -3,6 +3,10 @@ let http     = require('http')
   , mosca    = require('mosca')
   , UM = require('./userManager');
 
+const BROKER_PORT = process.env.BROKER_PORT;
+const WS_PORT = process.env.WS_PORT;
+const ADM_TOPIC_RESPONSE = process.env.ADM_TOPIC_RESPONSE;
+
 //Settings applied to mqttServ
 let settings = {
   host: 'localhost',    
@@ -87,7 +91,7 @@ mqttServ.on('published', function(packet, client) {
     try {
       payload = JSON.parse(packet.payload.toString());
     }catch(e){
-      mqttServ.publish({topic:"admin/event",payload:`{"success":false, "payload":"payload must be in JSON format"}`});
+      mqttServ.publish({topic:"admin/event",payload:JSON.stringify({"success":false, "payload":"payload must be in JSON format"})});
     }
   }
   switch(packet.topic){
