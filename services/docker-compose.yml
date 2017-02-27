@@ -5,7 +5,7 @@ services:
   # (currently expected to run on ports 1883 and 3000).
   mqtt:
     build: mqtt
-    expose:
+    ports:
       - "1883:1883"
       - "3000:3000"
     depends_on:
