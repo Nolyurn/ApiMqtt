@@ -10,6 +10,7 @@ RUN npm install --silent -g webpack
 USER node
 WORKDIR /home/node/server
 RUN npm install --silent
+
 RUN npm run build
 
 CMD [ "npm", "start" ]

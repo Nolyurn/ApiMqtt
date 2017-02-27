@@ -7,6 +7,8 @@ RUN npm install --silent -g webpack
 
 USER node
 WORKDIR /home/node/sensors
-RUN npm install --silent && npm run build
+
+RUN npm install --silent
+RUN npm run build
 
 CMD [ "npm", "start" ]
