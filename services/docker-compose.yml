@@ -2,22 +2,27 @@ version: '2'
 services:
 
   # The MQTT broker service. The mqtt/ directory hosts the Mosca server
-  # (currently expected to run on port 9000).
+  # (currently expected to run on ports 1883 and 3000).
   mqtt:
     build: mqtt
-    expose:
-      - "9000"
+    env_file: .env
+    ports:
+      - "1883:1883"
+      - "3000:3000"
+    depends_on:
+      - redis
 
   # The simulation service. The simulator/ directory hosts the simulator (MQTT
   # client). The following parameters can be used to configure the service.
   simulator:
     build: simulator
+    env_file: .env
     depends_on:
       - mqtt
-    environment:
-      - BROKER_HOST=mqtt
-      #- BROKER_PORT=9000
-      - AUTH_USER=simulator
-      - AUTH_PASS=secret
-      #- TOPICS_START=sensors/start
-      #- TOPICS_STOP=sensors/stop
+      #- redis
+
+  # The Redis database used by the server (and possibly the simulator).
+  redis:
+    build: redis
+    expose:
+      - "6379"

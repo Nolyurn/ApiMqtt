@@ -1,0 +1,14 @@
+{
+  "name": "sensors",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "mocha --compilers js:babel-register"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-es2015": "^6.22.0",
+    "expect": "^1.20.2",
+    "mocha": "^3.2.0",
+    "mqtt": "^2.4.0"
+  }
+}
