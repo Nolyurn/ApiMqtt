@@ -69,11 +69,11 @@ function adminCreations(done){
 function moderatorCreations(done){ 
     console.log("moderator creation ");
     var createdCount = 0;
-    createSensor = function(type){
+    var createSensor = function(type){
         var sensor = {
             name:type,
             type:{
-                id:Types[type]
+                id:type
             },
             frequency:1
         };
@@ -85,8 +85,8 @@ function moderatorCreations(done){
         if(type==Types.TEMPERATURE){
             sensor.type.unit = "C";
         }
-        
-        moderator.createSensor(type,{
+
+        moderator.createSensor(sensor,{
             onSuccess:function(){
                 console.log("sensor "+type+" created");
                 createdCount++;
@@ -99,7 +99,7 @@ function moderatorCreations(done){
             }
         });
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         createSensor(sensor);
     }
 }
@@ -127,7 +127,7 @@ function userReadings(done){
             userUnsubscribe(done);
         }
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         user.subscribe(sensor, reading);
     }
 }
@@ -164,7 +164,7 @@ function moderatorDeletions(done){
             }
         });
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         deleteSensor(sensor);
     }
 }
