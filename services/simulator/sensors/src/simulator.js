@@ -73,7 +73,7 @@ export class SensorsSimulator {
         for(let subscription in this.subscriptions)
             if(this.subscriptions.hasOwnProperty(subscription) &&
                 topic === subscription)
-                this.subscriptions[subscription](message);
+                this.subscriptions[subscription](JSON.parse(message.toString()));
     }
 
     /**
