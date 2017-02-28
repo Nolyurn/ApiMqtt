@@ -1,5 +1,6 @@
 const crypto = require('crypto'), 
-      dataAccess = require('./dataAccess');
+      dataAccess = require('./dataAccess'),
+      util = require('./util');
 
 let storage;
 
@@ -40,8 +41,6 @@ exports.setStorageMode = function(mode){
 }
 
 exports.init = function(){    
-  let password = crypt("admin");
-  let privilege = PRIVILEGES.ADMIN_USER;
   storage.init()
 }
 
@@ -53,23 +52,23 @@ exports.login = function(username, password, client, callback){
 exports.createUser = function(mqtt, payload){
   let response="";
   if(!("token" in payload)){
-    response = `{"success":false, "token":null, "payload":"no token in payload"}`; 
+    response = util.payloadResponse(false, null, "no token in payload"); 
   }
   else if(!("username" in payload)){
-    response = `{"success":false, "token":${payload.token}, "payload":"no username in payload"}`; 
+    response = util.payloadResponse(false, payload.token, "no username in payload");
   }
   else if(!("password" in payload)){
-    response = `{"success":false, "token":${payload.token}, "payload":"no password in payload"}`; 
+  	response = util.payloadResponse(false, payload.token, "no password in payload"); 
   }
   else if(!("privilege" in payload)){
-    response = `{"success":false, "token":${payload.token}, "payload":"no privilege in payload"}`; 
+  	response = util.payloadResponse(false, payload.token, "no privilege in payload"); 
   }
   else if(!(payload.privilege in PRIVILEGES)){
-    response = `{"success":false, "token":${payload.token}, "payload":"this privilege does not exist"}`; 
+  	response = util.payloadResponse(false, payload.token, "this privilege does not exist"); 
   }
 
   if(response!=""){
-    mqtt.publish({topic:"admin/event","payload":`${response}`})
+    mqtt.publish({topic:"admin/event","payload":response})
     return false;
   }
 
@@ -79,37 +78,16 @@ exports.createUser = function(mqtt, payload){
 exports.deleteUser = function(mqtt, payload){
   let response="";
   if(!("token" in payload)){
-    response = `{"success":false, "token":null, "payload":"no token in payload"}`; 
+  	response = util.payloadResponse(false, null, "this privilege does not exist"); 
   }
   if(!("username" in payload)){
-    response = `{"success":false, "token":${payload.token}, "payload":"no username in payload"}`; 
+  	response = util.payloadResponse(false, payload.token, "no username in payload"); 
   }
 
   if(response!=""){
-    mqtt.publish({topic:"admin/event","payload":`${response}`})
+    mqtt.publish({topic:"admin/event","payload":response})
     return false;
   }
 
   storage.deleteUser(mqtt,payload);
 }
-/*
-exports.updateUser = function(mqtt, payload){
-  let response = "";
-  if(!("token" in payload)){
-    response = `{"success":false, token:null, "payload":"no token in payload"}`; 
-  }
-  if(!("username" in payload)){
-    response = `{"success":false, token:$(payload.token), "payload":"no username in payload"}`; 
-  }
-
-  redis_cli.get(payload.username, function(err, reply){
-    if(reply == null){
-      response = `{"success":false, token:$(payload.token), "payload":"this username does not exist"}`;
-    }else{
-      //Donner le nouveau password et/ou privilege, privilege doit être dans les privilege possible
-      response = `{"success":true, token:${payload.token}`;
-      redis_cli.set()
-    }
-    mqtt.publish({topic:"admin/event","payload":`${response}`})
-  }) 
-}*/

@@ -5,7 +5,7 @@ import Client from '../api/modules/Client.js';
 import Admin from '../api/modules/Admin.js';
 import {Privilege} from '../api/modules/Admin.js';
 
-var mqttUrl = "mqtt://localhost:1883";
+var mqttUrl;
 var sensors = ["RAND_INT", "RAND_FLOAT", "RAND_BOOLEAN", "ON_OFF", "OPEN_CLOSE", "TEMPERATURE"];
 var admin, moderator, user;
 var topics = {
@@ -23,8 +23,14 @@ var topics = {
     }
 };
 
-describe('', function() {
-    it("Integration test", function(done){
+describe('Integration test', function() {
+    it("webservice", function(done){
+        mqttUrl = "ws://localhost:3000";
+        this.timeout(60000);//1 minute for the integration test to be done
+        adminCreations(done);
+    });
+    it("mqtt", function(done){
+        mqttUrl = "mqtt://localhost:1883";
         this.timeout(60000);//1 minute for the integration test to be done
         adminCreations(done);
     });
@@ -33,6 +39,12 @@ describe('', function() {
 function adminCreations(done){
     console.log("admin creations");
     admin = new Admin(mqttUrl, {username:"admin", password:"admin"});
+    admin.on('error', function(e){
+        done("an error happened : "+e);
+    })
+    admin.on('close', function(){
+        done("admin client has been closed");
+    })
     admin.createUser("user", "user", Privilege.USER, {
         onSuccess: function(){
             console.log("user created");
@@ -57,11 +69,11 @@ function adminCreations(done){
 function moderatorCreations(done){ 
     console.log("moderator creation ");
     var createdCount = 0;
-    createSensor = function(type){
+    var createSensor = function(type){
         var sensor = {
             name:type,
             type:{
-                id:Types[type]
+                id:type
             },
             frequency:1
         };
@@ -73,8 +85,8 @@ function moderatorCreations(done){
         if(type==Types.TEMPERATURE){
             sensor.type.unit = "C";
         }
-        
-        moderator.createSensor(type,{
+
+        moderator.createSensor(sensor,{
             onSuccess:function(){
                 console.log("sensor "+type+" created");
                 createdCount++;
@@ -87,7 +99,7 @@ function moderatorCreations(done){
             }
         });
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         createSensor(sensor);
     }
 }
@@ -115,7 +127,7 @@ function userReadings(done){
             userUnsubscribe(done);
         }
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         user.subscribe(sensor, reading);
     }
 }
@@ -152,7 +164,7 @@ function moderatorDeletions(done){
             }
         });
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         deleteSensor(sensor);
     }
 }
