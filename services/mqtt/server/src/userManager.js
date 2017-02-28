@@ -1,5 +1,6 @@
 const crypto = require('crypto'), 
-      dataAccess = require('./dataAccess');
+      dataAccess = require('./dataAccess'),
+      util = require('./util');
 
 let storage;
 
@@ -40,8 +41,6 @@ exports.setStorageMode = function(mode){
 }
 
 exports.init = function(){    
-  let password = crypt("admin");
-  let privilege = PRIVILEGES.ADMIN_USER;
   storage.init()
 }
 
@@ -53,19 +52,19 @@ exports.login = function(username, password, client, callback){
 exports.createUser = function(mqtt, payload){
   let response="";
   if(!("token" in payload)){
-    response = JSON.stringify({"success":false, "token":null, "payload":"no token in payload"}); 
+    response = util.payloadResponse(false, null, "no token in payload"); 
   }
   else if(!("username" in payload)){
-    response = JSON.stringify({"success":false, "token":payload.token, "payload":"no username in payload"}); 
+    response = util.payloadResponse(false, payload.token, "no username in payload");
   }
   else if(!("password" in payload)){
-    response = JSON.stringify({"success":false, "token":payload.token, "payload":"no password in payload"}); 
+  	response = util.payloadResponse(false, payload.token, "no password in payload"); 
   }
   else if(!("privilege" in payload)){
-    response = JSON.stringify({"success":false, "token":payload.token, "payload":"no privilege in payload"}); 
+  	response = util.payloadResponse(false, payload.token, "no privilege in payload"); 
   }
   else if(!(payload.privilege in PRIVILEGES)){
-    response = JSON.stringify({"success":false, "token":payload.token, "payload":"this privilege does not exist"}); 
+  	response = util.payloadResponse(false, payload.token, "this privilege does not exist"); 
   }
 
   if(response!=""){
@@ -79,10 +78,10 @@ exports.createUser = function(mqtt, payload){
 exports.deleteUser = function(mqtt, payload){
   let response="";
   if(!("token" in payload)){
-    response = JSON.stringify({"success":false, "token":null, "payload":"no token in payload"}); 
+  	response = util.payloadResponse(false, null, "this privilege does not exist"); 
   }
   if(!("username" in payload)){
-    response = JSON.stringify({"success":false, "token":payload.token, "payload":"no username in payload"}); 
+  	response = util.payloadResponse(false, payload.token, "no username in payload"); 
   }
 
   if(response!=""){
