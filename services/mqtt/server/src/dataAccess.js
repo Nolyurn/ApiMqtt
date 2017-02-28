@@ -120,8 +120,7 @@ exports.RAM =
       }catch(e){
         callback(null,false);
       }
-      console.log(userJSON.password)
-      console.log(crypt(password.toString()))
+
       if(userJSON.password==crypt(password.toString())){
         client.privilege = userJSON.privilege;
         client.username = username;
