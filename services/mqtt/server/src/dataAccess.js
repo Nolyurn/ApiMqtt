@@ -38,6 +38,10 @@ exports.Redis =
     let password = crypt("admin");
     let privilege = PRIVILEGES.ADMIN_USER;
     dataStore.set("admin", JSON.stringify({"password":password,"privilege":privilege}))
+
+    let password_simu = crypt("secret");
+    let privilege_simu = PRIVILEGES.SIMULATOR;
+    dataStore.set("simulator", JSON.stringify({"password":password_simu,"privilege":privilege_simu}))
   },
   login : function(username, password, client, callback){
     dataStore.get(username, function(err, reply){
@@ -102,6 +106,11 @@ exports.RAM =
     let privilege = PRIVILEGES.ADMIN_USER;
 
     dataStore["admin"] = JSON.stringify({"password":password,"privilege":privilege});
+
+    let password_simu = crypt("secret");
+    let privilege_simu = PRIVILEGES.SIMULATOR;
+
+    dataStore["simulator"] = JSON.stringify({"password":password_simu,"privilege":privilege_simu});
   },
   login : function(username, password, client, callback){
     let userJSON = null;
@@ -111,7 +120,8 @@ exports.RAM =
       }catch(e){
         callback(null,false);
       }
-
+      console.log(userJSON.password)
+      console.log(crypt(password.toString()))
       if(userJSON.password==crypt(password.toString())){
         client.privilege = userJSON.privilege;
         client.username = username;

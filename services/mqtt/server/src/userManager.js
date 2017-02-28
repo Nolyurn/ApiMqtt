@@ -41,8 +41,6 @@ exports.setStorageMode = function(mode){
 }
 
 exports.init = function(){    
-  let password = crypt("admin");
-  let privilege = PRIVILEGES.ADMIN_USER;
   storage.init()
 }
 
