@@ -9,7 +9,7 @@ const ADM_TOPIC_RESPONSE = process.env.ADM_TOPIC_RESPONSE;
 
 //Settings applied to mqttServ
 let settings = {
-  host: 'localhost',    
+  host: 'mqtt',    
   port: 1883    //It should be 1883
 };
  
