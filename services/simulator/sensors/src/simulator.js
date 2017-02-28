@@ -38,8 +38,8 @@ export class SensorsSimulator {
         this.uplink.on('connect', function () {
             /* Schedule announcements. */
             console.log('Scheduling announcements every ' + announce_freq + 's.');
-            that.announce = setInterval(
-                that.announce_timer.bind(this),
+            that.announce_timer = setInterval(
+                that.announce.bind(that),
                 Math.round(announce_freq * 1000)
             );
 
@@ -53,7 +53,7 @@ export class SensorsSimulator {
         });
 
         this.uplink.on('close', function (error) {
-            clearInterval(this.announce);
+            clearInterval(this.announce_timer);
             console.log('Failed to connect to the broker, ' +
                         'will try again in ' + retry_freq + 's (' + error + ')');
         });
