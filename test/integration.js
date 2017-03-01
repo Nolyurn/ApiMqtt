@@ -38,7 +38,7 @@ describe('Integration test', function() {
 });
 
 function adminCreations(done){
-    console.log("admin creations");
+    console.log("admin creates user and moderator");
     admin = new Admin(mqttUrl, {username:"admin", password:"admin"});
     admin.on('error', function(e){
         done("an error happened : "+e);
@@ -68,7 +68,7 @@ function adminCreations(done){
 }
 
 function moderatorCreations(done){ 
-    console.log("moderator creation ");
+    console.log("moderator creates sensors");
     var createdCount = 0;
     var createSensor = function(type){
         var sensor = {
@@ -106,7 +106,7 @@ function moderatorCreations(done){
 }
 
 function userReadings(done){
-    console.log("user readings ");
+    console.log("user reads publications on sensor topics");
     if(!user.getTopics().length == 6){
         done("announcement does not list every available topic");
     }
@@ -134,7 +134,7 @@ function userReadings(done){
 }
 
 function userUnsubscribe(done){
-    console.log("user unsubscribe ");
+    console.log("user unsubscribes from topics");
     var unsubscribed = false;
     user.subscribe(sensors[0], function(){
         if(unsubscribed){
@@ -149,7 +149,7 @@ function userUnsubscribe(done){
 }
 
 function moderatorDeletions(done){
-    console.log("moderator deletions ");
+    console.log("moderator deletes topics");
     var deletedCount = 0;
     deleteSensor = function(type){
         moderator.deleteSensor(type,{
@@ -171,7 +171,7 @@ function moderatorDeletions(done){
 }
 
 function userNotReading(done){
-    console.log("user reading after sensor deletions");
+    console.log("user tries to read on deleted sensors topics");
     user.subscribe(sensors[0], function(){
         done("user receives payloads after sensor deletion");
     });
