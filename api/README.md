@@ -1,6 +1,44 @@
-# API Proto MQTT
+# proto-mqtt client
+
+The proto-mqtt client is a Javascript library for easy interfacing with
+the proto-mqtt broker.
+
+[![NPM](https://nodei.co/npm/proto-mqtt-client.png)](https://nodei.co/npm/proto-mqtt-client/)
+
+## Use proto-mqtt client in your Node project
+
+To use the proto-mqtt-client as a dependency in your project, put yourself
+in the project folder, and then execute the following :
+
+```bash
+npm install --save proto-mqtt-client
+```
+
+## Use proto-mqtt client in a browser-sided project
+
+In order to convert the Node JS library to a browser library, you'll need
+to install browserify :
+
+```bash
+npm install -g browserify
+```
+
+Then clone the source, build it, and then browserify it where you want :
+
+```bash
+git clone https://github.com/Nolyurn/proto-mqtt
+cd proto-mqtt/api
+npm install
+npm build
+browserify dist/index.js -o bundle.js
+```
+
+And your `bundle.js` file is now ready to be used in your client-sided
+applications.
 
 ## Usage
+
+
 
 #### Administrateur
 
@@ -69,7 +107,7 @@ client.on("reconnect", () => {
 });
 
 client.on("offline", () => {
-    // Le code quand le client est hors ligne. 
+    // Le code quand le client est hors ligne.
 });
 
 client.on("error", (error) => {
