@@ -67,13 +67,24 @@ export class SensorsSimulator {
      * @param message The message's payload.
      */
     dispatch(topic, message) {
+        let json_message = {};
+
+        try {
+            message = message.toString();
+            json_message = JSON.parse(message);
+        }
+        catch(err) {
+            console.log('Invalid request received (not a JSON payload) :', message);
+            return;
+        }
+
         /* Note: this will fail to dispatch messages if we subscribed using a
          * wildcard (eg. topic/#). For our use case it's not really a
          * problem. */
         for(let subscription in this.subscriptions)
             if(this.subscriptions.hasOwnProperty(subscription) &&
                 topic === subscription)
-                this.subscriptions[subscription](JSON.parse(message.toString()));
+                this.subscriptions[subscription](json_message);
     }
 
     /**
