@@ -12,9 +12,10 @@ export class SensorsSimulator {
      * @param username The username for simulator privileges.
      * @param password The associated password.
      * @param announce_freq The announcement frequency.
+     * @param retry_freq The connection retry interval.
      * @param topics The topic names to use (see app.js).
      */
-    constructor(uri, username, password, announce_freq, topics) {
+    constructor(uri, username, password, announce_freq, retry_freq, topics) {
         this.sensors = new SensorCollection();
         this.announce_timer = null;
         this.announce_on = topics.announce;
@@ -26,26 +27,35 @@ export class SensorsSimulator {
 
         /* Open a connection. */
         const that = this;
+
+        console.log('Opening a connection to ' + uri + '...');
         this.uplink = mqtt.connect(uri, {
             username: username,
-            password: password
+            password: password,
+            reconnectPeriod: Math.round(retry_freq * 1000)
         });
 
         this.uplink.on('connect', function () {
             /* Schedule announcements. */
-            that.announce = setInterval(
-                that.announce_timer.bind(this),
+            console.log('Scheduling announcements every ' + announce_freq + 's.');
+            that.announce_timer = setInterval(
+                that.announce.bind(that),
                 Math.round(announce_freq * 1000)
             );
 
             /* Subscribe to requests channels. */
-            for(let sub of [topics.start, topics.stop])
+            for (let sub of [topics.start, topics.stop]) {
+                console.log('Ready on ' + sub + '.');
                 that.uplink.subscribe(sub);
+            }
+
+            console.log('Broker connection established.');
         });
 
-        this.uplink.on('error', function(error) {
-            clearInterval(this.announce);
-            throw new Error("Cannot connect to the MQTT server: " + error);
+        this.uplink.on('close', function (error) {
+            clearInterval(this.announce_timer);
+            console.log('Failed to connect to the broker, ' +
+                        'will try again in ' + retry_freq + 's (' + error + ')');
         });
 
         this.uplink.on('message', this.dispatch.bind(this));
@@ -63,7 +73,7 @@ export class SensorsSimulator {
         for(let subscription in this.subscriptions)
             if(this.subscriptions.hasOwnProperty(subscription) &&
                 topic === subscription)
-                this.subscriptions[subscription](message);
+                this.subscriptions[subscription](JSON.parse(message.toString()));
     }
 
     /**
@@ -81,9 +91,11 @@ export class SensorsSimulator {
      * @param op The actual operation to execute.
      */
     request_handler(payload, op) {
-        if(!payload.hasOwnProperty('token'))
+        if(!payload.hasOwnProperty('token')) {
             /* No token: request ignored. We can't identify it on sensors/response. */
+            console.log('Invalid request received (missing token) : ' + JSON.stringify(payload));
             return;
+        }
 
         try {
             /* Try to perform the request operation ; all ops should throw errors when unsuccessful. */

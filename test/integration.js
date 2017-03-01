@@ -5,7 +5,8 @@ import Client from '../api/modules/Client.js';
 import Admin from '../api/modules/Admin.js';
 import {Privilege} from '../api/modules/Admin.js';
 
-var mqttUrl = "mqtt://localhost:1883";
+var mqtt = require('mqtt');
+var mqttUrl;
 var sensors = ["RAND_INT", "RAND_FLOAT", "RAND_BOOLEAN", "ON_OFF", "OPEN_CLOSE", "TEMPERATURE"];
 var admin, moderator, user;
 var topics = {
@@ -23,16 +24,28 @@ var topics = {
     }
 };
 
-describe('', function() {
-    it("Integration test", function(done){
-        this.timeout(60000);//1 minute for the integration test to be done
+describe('Integration test', function() {
+    it("webservice", function(done){
+        mqttUrl = "ws://localhost:3000";
+        this.timeout(20000);
+        adminCreations(done);
+    });
+    it("mqtt", function(done){
+        mqttUrl = "mqtt://localhost:1883";
+        this.timeout(20000);
         adminCreations(done);
     });
 });
 
 function adminCreations(done){
-    console.log("admin creations");
+    console.log("admin creates user and moderator");
     admin = new Admin(mqttUrl, {username:"admin", password:"admin"});
+    admin.on('error', function(e){
+        done("an error happened : "+e);
+    })
+    admin.on('close', function(){
+        done("admin client has been closed");
+    })
     admin.createUser("user", "user", Privilege.USER, {
         onSuccess: function(){
             console.log("user created");
@@ -55,13 +68,13 @@ function adminCreations(done){
 }
 
 function moderatorCreations(done){ 
-    console.log("moderator creation ");
+    console.log("moderator creates sensors");
     var createdCount = 0;
-    createSensor = function(type){
+    var createSensor = function(type){
         var sensor = {
             name:type,
             type:{
-                id:Types[type]
+                id:type
             },
             frequency:1
         };
@@ -73,8 +86,8 @@ function moderatorCreations(done){
         if(type==Types.TEMPERATURE){
             sensor.type.unit = "C";
         }
-        
-        moderator.createSensor(type,{
+
+        moderator.createSensor(sensor,{
             onSuccess:function(){
                 console.log("sensor "+type+" created");
                 createdCount++;
@@ -87,13 +100,13 @@ function moderatorCreations(done){
             }
         });
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         createSensor(sensor);
     }
 }
 
 function userReadings(done){
-    console.log("user readings ");
+    console.log("user reads publications on sensor topics");
     if(!user.getTopics().length == 6){
         done("announcement does not list every available topic");
     }
@@ -115,13 +128,13 @@ function userReadings(done){
             userUnsubscribe(done);
         }
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         user.subscribe(sensor, reading);
     }
 }
 
 function userUnsubscribe(done){
-    console.log("user unsubscribe ");
+    console.log("user unsubscribes from topics");
     var unsubscribed = false;
     user.subscribe(sensors[0], function(){
         if(unsubscribed){
@@ -136,7 +149,7 @@ function userUnsubscribe(done){
 }
 
 function moderatorDeletions(done){
-    console.log("moderator deletions ");
+    console.log("moderator deletes topics");
     var deletedCount = 0;
     deleteSensor = function(type){
         moderator.deleteSensor(type,{
@@ -152,33 +165,34 @@ function moderatorDeletions(done){
             }
         });
     }
-    for(sensor of sensors){
+    for(var sensor of sensors){
         deleteSensor(sensor);
     }
 }
 
 function userNotReading(done){
-    console.log("user reading after sensor deletions");
+    console.log("user tries to read on deleted sensors topics");
     user.subscribe(sensors[0], function(){
         done("user receives payloads after sensor deletion");
     });
     userAndModeratorTryAdminMethods(done);
 }
 
-function checkSubscriptionRefused(user, topic, doneCallback){
-    var client = mqtt.connect('mqtt://localhost:1883', user);
+function checkSubscriptionRefused(user, topic, doneCallback, continueCallback){
+    var client = mqtt.connect(mqttUrl, user);
     client.subscribe(topic, {qos:0}, function(err, grant){
         client.end();
         if(grant[0].qos == 0){
-            client.end();
             doneCallback("Subscribe on "+topic+" should be forbidden for "+user.username);
-        } 
+        } else {
+            continueCallback();
+        }
     });
 }
 
-function checkPublicationRefused(user, checker, topic, doneCallback){
-    var client = mqtt.connect('mqtt://localhost:1883', user);
-    var checker = mqtt.connect('mqtt://localhost:1883', userCheck);
+function checkPublicationRefused(user, checker, topic, doneCallback, continueCallback){
+    var client = mqtt.connect(mqttUrl, user);
+    var checker = mqtt.connect(mqttUrl, checker);
     checker.subscribe(topic);
     checker.on('message', function(){
         checker.end();
@@ -188,7 +202,8 @@ function checkPublicationRefused(user, checker, topic, doneCallback){
     client.end();
     setTimeout(function(){
         checker.end();
-    }, 500);
+        continueCallback();
+    }, 400);
 }
 
 function userAndModeratorTryAdminMethods(done){
@@ -197,17 +212,24 @@ function userAndModeratorTryAdminMethods(done){
     var admindata = {username:"admin", password:"admin"};
     var moderatordata = {username:"moderator", password:"moderator"};
     
-    var testUser = function(data){
-        checkSubscriptionRefused(data, topics.admin.create, done);
-        checkSubscriptionRefused(data, topics.admin.delete, done);
-        checkPublicationRefused(data, admindata, topics.admin.create, done);
-        checkPublicationRefused(data, admindata, topics.admin.delete, done);
+    var testUser = function(data, callback){
+        checkSubscriptionRefused(data, topics.admin.create, done, function(){
+            checkSubscriptionRefused(data, topics.admin.delete, done, function(){
+                checkPublicationRefused(data, admindata, topics.admin.create, done, function(){
+                    checkPublicationRefused(data, admindata, topics.admin.delete, done, function(){
+                        callback();
+                    });
+                });
+            });
+        });
     }
 
-    testUser(userdata);
-    testUser(moderatordata);
+    testUser(userdata, function(){
+        testUser(moderatordata, function(){
+            userAndAdminTryModeratorMethods(done);
+        });
+    });
     
-    userAndAdminTryModeratorMethods(done);
 }
 
 function userAndAdminTryModeratorMethods(done){
@@ -216,17 +238,24 @@ function userAndAdminTryModeratorMethods(done){
     var admindata = {username:"admin", password:"admin"};
     var moderatordata = {username:"moderator", password:"moderator"};
     
-    var testUser = function(data){
-        checkSubscriptionRefused(data, topics.moderator.start, done);
-        checkSubscriptionRefused(data, topics.moderator.stop, done);
-        checkPublicationRefused(data, moderatordata, topics.moderator.start, done);
-        checkPublicationRefused(data, moderatordata, topics.moderator.stop, done);
+    var testUser = function(data, callback){
+        checkSubscriptionRefused(data, topics.moderator.start, done, function(){
+            checkSubscriptionRefused(data, topics.moderator.stop, done, function(){
+                checkPublicationRefused(data, moderatordata, topics.moderator.start, done, function(){
+                    checkPublicationRefused(data, moderatordata, topics.moderator.stop, done, function(){
+                        callback();
+                    });
+                });
+            }); 
+        });
     }
 
-    testUser(userdata);
-    testUser(admindata);
+    testUser(userdata, function(){
+        testUser(admindata, function(){
+            userAdminAndModeratorTrySimulatorMethods(done);
+        });
+    });
     
-    userAdminAndModeratorTrySimulatorMethods(done);
 }
 
 function userAdminAndModeratorTrySimulatorMethods(done){
@@ -235,20 +264,28 @@ function userAdminAndModeratorTrySimulatorMethods(done){
     var admindata = {username:"admin", password:"admin"};
     var moderatordata = {username:"moderator", password:"moderator"};
     
-    var testUser = function(data){
-        checkPublicationRefused(data, userdata, topics.simulator.sensor, done);
-        checkPublicationRefused(data, userdata, topics.simulator.announces, done);
+    var testUser = function(data, callback){
+        checkPublicationRefused(data, userdata, topics.simulator.sensor, done, function(){
+            checkPublicationRefused(data, userdata, topics.simulator.announces, done, function(){
+                callback();
+            });
+        });
     }
 
-    testUser(userdata);
-    testUser(admindata);
-    testUser(moderatordata);
+    testUser(userdata, function(){
+        testUser(admindata, function(){
+            testUser(moderatordata, function(){
+                adminDeletions(done);
+            });
+        });
+    });
     
-    adminDeletions(done);
 }
 
 function adminDeletions(done){
     console.log("admin deletes user and moderator");
+    user.end();
+    moderator.end();
     admin.deleteUser("user", {
         onSuccess: function(){
             console.log("user deleted");

@@ -16,7 +16,7 @@ var moderator = {
     password:"password"
 };
 var simulator = {
-    username:"simulator",
+    username:"simaccount",
     password:"password"
 };
 
@@ -87,6 +87,7 @@ describe("topic usage", function(){
                     message.toString().indexOf('"success":true') < 0){
                 adminClient.end();
                 done(message.toString());
+                return;
             }
             messageCount++;
             if(messageCount==3){
