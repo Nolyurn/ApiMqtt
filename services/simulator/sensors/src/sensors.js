@@ -105,7 +105,14 @@ export class SensorCollection {
     remove(payload) {
         if(!payload.hasOwnProperty('name'))
             throw new SensorError(format(ErrorMessage.INVALID_PAYLOAD, 'name'));
-        this.sensors = this.sensors.filter((i, e) => payload.name === e.name);
+
+        this.sensors = this.sensors.filter((e) => {
+            if(payload.name === e.name) {
+                clearInterval(e.timer);
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
