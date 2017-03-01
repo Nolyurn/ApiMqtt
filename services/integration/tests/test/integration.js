@@ -26,12 +26,12 @@ var topics = {
 
 describe('Integration test', function() {
     it("webservice", function(done){
-        mqttUrl = "ws://localhost:3000";
+        mqttUrl = "ws://mqtt:3000";
         this.timeout(20000);
         adminCreations(done);
     });
     it("mqtt", function(done){
-        mqttUrl = "mqtt://localhost:1883";
+        mqttUrl = "mqtt://mqtt:1883";
         this.timeout(20000);
         adminCreations(done);
     });
