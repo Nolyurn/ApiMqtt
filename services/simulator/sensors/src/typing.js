@@ -44,7 +44,7 @@ class SensorDataType {
     /**
      * @returns {{id: string}} The type as a JSON payload.
      */
-    json() { return {'id': this.id()} }
+    json() { return {'id': this.constructor.id()} }
 }
 
 class RandFloat extends SensorDataType {

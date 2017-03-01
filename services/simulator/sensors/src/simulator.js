@@ -80,9 +80,7 @@ export class SensorsSimulator {
      * Announces the list of sensors regularly.
      */
     announce() {
-        this.uplink.publish(this.announce_on, JSON.stringify(
-            this.sensors.json()
-        ));
+        this.uplink.publish(this.announce_on, JSON.stringify(this.sensors.json()));
     }
 
     /**
@@ -101,11 +99,19 @@ export class SensorsSimulator {
             /* Try to perform the request operation ; all ops should throw errors when unsuccessful. */
             op(payload);
             /* Emit a success response. */
-            this.uplink.publish(this.response, {'token': payload.token, 'status': 1});
+            this.uplink.publish(this.response, JSON.stringify({
+                'token': payload.token,
+                'success': true
+            }));
         }
         catch(err) {
+            console.log(err);
             /* An error occurred: publish the error under the token on sensors/response. */
-            this.uplink.publish(this.response, {'token': payload.token, 'status': 0, payload: err.message});
+            this.uplink.publish(this.response, JSON.stringify({
+                'token': payload.token,
+                'success': false,
+                'payload': err.message
+            }));
         }
     }
 
@@ -135,6 +141,6 @@ export class SensorsSimulator {
      * @param sensor The sensor to be simulated.
      */
     simulate(sensor) {
-        this.uplink.publish(sensor.topic(), {'value': sensor.value(), 'type': sensor.type});
+        this.uplink.publish(sensor.topic(), JSON.stringify({'value': sensor.value(), 'type': sensor.type}));
     }
 }
