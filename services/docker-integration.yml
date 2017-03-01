@@ -1,0 +1,10 @@
+version: '2'
+services:
+  integration:
+    build: integration
+    env_file: .env
+
+networks:
+  default:
+    external:
+      name: "services_proto_mqtt_network"

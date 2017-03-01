@@ -9,6 +9,8 @@ services:
     ports:
       - "1883:1883"
       - "3000:3000"
+    networks:
+      - "proto_mqtt_network"
     depends_on:
       - redis
 
@@ -17,12 +19,19 @@ services:
   simulator:
     build: simulator
     env_file: .env
+    networks:
+      - "proto_mqtt_network"
     depends_on:
       - mqtt
-      #- redis
 
   # The Redis database used by the server (and possibly the simulator).
   redis:
     build: redis
+    networks:
+      - "proto_mqtt_network"
     expose:
       - "6379"
+      
+networks:
+  proto_mqtt_network:
+    driver: bridge
