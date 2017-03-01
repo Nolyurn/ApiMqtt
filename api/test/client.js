@@ -1,5 +1,5 @@
 import expect from 'expect';
-import Client from '../modules/Client.js';
+import Client from '../src/Client.js';
 
 // mocking server
 var server = require('./test-server.js').server;

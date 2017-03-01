@@ -1,6 +1,6 @@
-import Client from "modules/Client";
-import Admin from "modules/Admin";
-import Moderator from "modules/Moderator";
+import Client from "./Client";
+import Admin from "./Admin";
+import Moderator from "./Moderator";
 
 exports.testFunc = function () {
     console.log("L'import fonctionne bien.");

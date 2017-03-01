@@ -1,14 +1,16 @@
 {
-  "name": "proto-mqtt",
-  "version": "0.1.0",
+  "name": "proto-mqtt-client",
+  "version": "0.1.3",
   "description": "A client-sided library to simulate sensors linked to a proto-mqtt broker.",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-register"
+    "test": "mocha --compilers js:babel-register",
+    "build": "babel src --preset-es2015 --out-dir dist",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Nolyurn/ApiMqtt.git"
+    "url": "git+https://github.com/Nolyurn/proto-mqtt.git"
   },
   "keywords": [
     "mqtt"
@@ -21,9 +23,9 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Nolyurn/ApiMqtt/issues"
+    "url": "https://github.com/Nolyurn/proto-mqtt/issues"
   },
-  "homepage": "https://github.com/Nolyurn/ApiMqtt#readme",
+  "homepage": "https://github.com/Nolyurn/proto-mqtt#readme",
   "devDependencies": {
     "babel-cli": "^6.22.2",
     "babel-preset-es2015": "^6.22.0",
