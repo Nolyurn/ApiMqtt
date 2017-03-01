@@ -1,4 +1,4 @@
 .idea/
-out/
+dist/
 node_modules/
 build/

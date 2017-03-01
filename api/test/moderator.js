@@ -1,6 +1,6 @@
 import expect from 'expect';
-import Moderator from '../modules/Moderator.js';
-import {Types} from '../modules/Moderator.js';
+import Moderator from '../src/Moderator.js';
+import {Types} from '../src/Moderator.js';
 
 var server = require('./test-server.js').server;
 
