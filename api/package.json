@@ -5,7 +5,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-register",
-    "build": "babel src --preset-es2015 --out-dir dist",
+    "build": "babel src --out-dir dist",
     "prepublish": "npm run build"
   },
   "repository": {
