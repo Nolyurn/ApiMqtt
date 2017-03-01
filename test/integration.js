@@ -7,7 +7,7 @@ import {Privilege} from '../api/modules/Admin.js';
 
 var mqtt = require('mqtt');
 var mqttUrl;
-var sensors = ["RAND_INT", "RAND_FLOAT", "RAND_BOOLEAN", "ON_OFF", "OPEN_CLOSE", "TEMPERATURE"];
+var sensors = ["RAND_INT", "RAND_FLOAT", "RAND_BOOLEAN", "ON_OFF", "OPEN_CLOSE", "ROOM_TEMPERATURE"];
 var admin, moderator, user;
 var topics = {
     admin:{
@@ -83,7 +83,7 @@ function moderatorCreations(done){
             sensor.type.min = 0;
             sensor.type.max = 0;
         }
-        if(type==Types.TEMPERATURE){
+        if(type==Types.ROOM_TEMPERATURE){
             sensor.type.unit = "C";
         }
 
@@ -111,15 +111,16 @@ function userReadings(done){
         done("announcement does not list every available topic");
     }
     var publishedTopics = 0;
-    reading = function(topic, payload){
+    var reading = function(topic, payload){
+        var type = topic;
         if(type==Types.RAND_INT){
             if(payload.value < 0 || payload.value > 5){
                 done("randint payload out of bounds : "+payload.value)
             }
         }
-        if(type==Types.TEMPERATURE){
-            if(payload.value.indexOf('C') < 0){
-                done("temperature payload does not use correct unit : "+payload.value)
+        if(type==Types.ROOM_TEMPERATURE){
+            if(payload.type.unit.indexOf("C") != 0){
+                done("temperature payload does not use correct unit : "+payload.type.unit)
             }
         }
 
@@ -151,7 +152,7 @@ function userUnsubscribe(done){
 function moderatorDeletions(done){
     console.log("moderator deletes topics");
     var deletedCount = 0;
-    deleteSensor = function(type){
+    var deleteSensor = function(type){
         moderator.deleteSensor(type,{
             onSuccess:function(){
                 console.log("sensor "+type+" deleted");
