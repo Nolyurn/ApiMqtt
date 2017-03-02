@@ -59,22 +59,21 @@ Events fired depends on privilege type.
 The Administrator has the privilege to create and delete users in the database,
 with the privilege of his choice.
 
-You can see the references on the [[Admin wiki page|Admin]].
+You can see the references on the [Admin wiki page](https://github.com/Nolyurn/proto-mqtt/wiki/Admin).
 
 #### Moderator
 
 The moderator has the power to create sensors and to delete those ones.
 He can specify the type, and the frequency for the simulated sensor.
 
-You can see the references on the [[Moderator wiki page|Moderator]].
+You can see the references on the [Moderator wiki page](https://github.com/Nolyurn/proto-mqtt/wiki/Moderator).
 
 #### Client
 
 The Client has the basic rights : those to connect to the values sent
 by the simulator.
 
-You can see the references on the [[Client wiki page|Client]].
-
+You can see the references on the [Client wiki page](https://github.com/Nolyurn/proto-mqtt/wiki/Client)
 
 ### Examples
 
