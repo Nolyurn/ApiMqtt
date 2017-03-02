@@ -6,6 +6,6 @@ exports.testFunc = function () {
     console.log("L'import fonctionne bien.");
 };
 
-exports.Client = Client;
-exports.Admin = Admin;
-exports.Moderator = Moderator;
+module.exports.Client = Client;
+module.exports.Admin = Admin;
+module.exports.Moderator = Moderator;
