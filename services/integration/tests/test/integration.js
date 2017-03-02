@@ -43,6 +43,7 @@ function adminCreations(done){
     })
     admin.createUser("user", "user", Privilege.USER, {
         onSuccess: function(){
+	    console.log("user created");
             admin.createUser("moderator", "moderator", Privilege.MODERATOR, {
                 onSuccess: function(){
                     console.log("moderator created");
