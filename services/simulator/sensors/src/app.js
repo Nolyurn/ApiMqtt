@@ -2,7 +2,7 @@ import { SensorsSimulator } from './simulator';
 
 /* Recover the parameters from the environment (typically set through Docker). */
 let broker_host = process.env.BROKER_HOST;
-let broker_port = process.env.BROKER_PORT;
+let ws_port = process.env.WS_PORT;
 let auth_user = process.env.SIM_USER;
 let auth_pass = process.env.SIM_PASS;
 let topics_start = process.env.SIM_TOPICS_START;
@@ -20,7 +20,7 @@ for (let v of [broker_host, auth_user, auth_pass])
             'BROKER_HOST, SIM_USER, SIM_PASS.');
 
 /* Setting defaults. */
-broker_port = broker_port === undefined ? 1883 : broker_port;
+ws_port = ws_port === undefined ? 3000 : ws_port;
 topics_start = topics_start === undefined ? 'sensor/start' : topics_start;
 topics_stop = topics_stop === undefined ? 'sensor/stop' : topics_stop;
 topics_response = topics_response === undefined ? 'sensor/event' : topics_response;
@@ -30,7 +30,7 @@ retry_freq = retry_freq === undefined ? 5 : retry_freq;
 
 /* Setting callbacks: off we go! */
 new SensorsSimulator(
-    'mqtt://' + broker_host + ':' + broker_port,
+    'ws://' + broker_host + ':' + ws_port,
     auth_user, auth_pass, announce_freq, retry_freq, {
         'start': topics_start, 
         'stop': topics_stop,
