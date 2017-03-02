@@ -187,4 +187,7 @@ class Admin {
 
 }
 
-export default Admin;
+module.exports = {
+    Admin : Admin,
+    Privilege: Privilege
+};
