@@ -1,6 +1,6 @@
 {
   "name": "proto-mqtt-client",
-  "version": "0.1.3",
+  "version": "0.1.8",
   "description": "A client-sided library to simulate sensors linked to a proto-mqtt broker.",
   "main": "./dist/index.js",
   "scripts": {

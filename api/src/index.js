@@ -1,11 +1,16 @@
-import Client from "./Client";
-import Admin from "./Admin";
-import Moderator from "./Moderator";
+import {Client} from "./Client";
+import {Admin, Privilege} from "./Admin";
+import {Moderator, Types} from "./Moderator";
+
 
 exports.testFunc = function () {
     console.log("L'import fonctionne bien.");
 };
 
-exports.Client = Client;
-exports.Admin = Admin;
-exports.Moderator = Moderator;
+module.exports = {
+    Client : Client,
+    Admin : Admin,
+    Moderator : Moderator,
+    Privilege : Privilege,
+    Types : Types
+};
