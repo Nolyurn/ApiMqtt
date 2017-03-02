@@ -205,4 +205,7 @@ class Moderator {
 
 }
 
-export default Moderator;
+module.exports = {
+    Moderator : Moderator,
+    Types: Types
+};

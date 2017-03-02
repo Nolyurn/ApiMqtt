@@ -1,9 +1,11 @@
 # Docker infrastructure for the MQTT service #
 
-This directory is split into two parts:
+This directory is split into 4 parts:
 
 - The `mqtt/` directory hosts the Mosca MQTT broker. It handles topics, authentication, and so on.
 - The `simulator/` directory hosts the simulation service, an MQTT client with special privileges granted by the broker.
+- The `redis/` directory contains a custom Redis configuration to suit the broker's needs.
+- The `integration/` directory defines a container used for integration tests, and isn't part of the base infrastructure.
 
 ## Starting the service ##
 
@@ -11,9 +13,7 @@ Typically, the service can be started by running:
 
     $ docker-compose up --build
 
-This will start the MQTT broker first, then the simulation service.
-
-**Note:** this will fail until all components are pushed on this remote.
+This will start the MQTT broker first along with its Redis database, then the simulation service.
 
 ## Development ##
 
@@ -28,7 +28,7 @@ At present, the `Dockerfile`s do as follows:
 5. Start the service with `npm start`.
 
 Use the `scripts` section of your `package.json` files to define `build` based on what you need.
-You should also define the `start` and `test` scripts (containers will be running tests upon build later on).
+You should also define the `start` and `test` scripts (your code **must** pass all unit tests for the build to be successful).
 Feel free to edit your `Dockerfile` if you require more setup (beyond your `package.json` file).
 
 If you want to work on your code through Docker, use the following to get a node environment for the project:
@@ -49,3 +49,11 @@ Then you may initialise your project, build or start it:
     $ npm run build
     $ npm start
     $ ...
+
+# Integration #
+
+The `integration` directory defines a special container, which can be started with:
+
+    $ docker-compose up --build -f docker-integration.yml
+
+**This original infrastructure must be running for this to work!** If so the container will start and attach itself to the existing infrastructure's network. It will then execute a set of integration tests over all components, and exit.

@@ -1,6 +1,6 @@
 import expect from 'expect';
-import Admin from '../modules/Admin.js';
-import {Privilege} from '../modules/Admin.js';
+import Admin from '../src/Admin.js';
+import {Privilege} from '../src/Admin.js';
 var mqtt = require('mqtt');
 
 var server = require('./test-server.js').server;

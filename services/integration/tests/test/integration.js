@@ -1,9 +1,4 @@
-import expect from 'expect';
-import Moderator from '../api/modules/Moderator.js';
-import {Types} from '../api/modules/Moderator.js';
-import Client from '../api/modules/Client.js';
-import Admin from '../api/modules/Admin.js';
-import {Privilege} from '../api/modules/Admin.js';
+import {Moderator, Types, Client, Admin, Privilege} from 'proto-mqtt-client';
 
 var mqtt = require('mqtt');
 var mqttUrl;
@@ -26,12 +21,12 @@ var topics = {
 
 describe('Integration test', function() {
     it("webservice", function(done){
-        mqttUrl = "ws://localhost:3000";
+        mqttUrl = "ws://mqtt:3000";
         this.timeout(20000);
         adminCreations(done);
     });
     it("mqtt", function(done){
-        mqttUrl = "mqtt://localhost:1883";
+        mqttUrl = "mqtt://mqtt:1883";
         this.timeout(20000);
         adminCreations(done);
     });
@@ -48,7 +43,7 @@ function adminCreations(done){
     })
     admin.createUser("user", "user", Privilege.USER, {
         onSuccess: function(){
-            console.log("user created");
+	    console.log("user created");
             admin.createUser("moderator", "moderator", Privilege.MODERATOR, {
                 onSuccess: function(){
                     console.log("moderator created");
